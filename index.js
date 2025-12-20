@@ -9,7 +9,8 @@ dotenv.config();
 import dbConnect from "./config/database.js";
 import config from "./config/config.js";
 
-// Routes
+// ------------------ Routes ------------------
+// Make sure these files exist in ./routes folder
 import userRoutes from "./routes/usersroute.js";
 import adminRoutes from "./routes/adminroute.js";
 import productRoutes from "./routes/productsRoutes.js";
@@ -17,7 +18,7 @@ import appointmentRoutes from "./routes/appointmentRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import doctorRoutes from "./routes/doctorRoutes.js";
 import purchaseRoutes from "./routes/purchaseRoutes.js";
-import salesRoutes from "./routes/sales.js";
+import salesRoutes from "./routes/salesRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
 import userManagementRoutes from "./routes/UserManagementRoutes.js";
@@ -34,7 +35,6 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3000", // local frontend
   "http://0.0.0.0:8080",
-  "https://mediposbackend.onrender.com",
   "https://muhafizoprojectit.vercel.app"
 ];
 
@@ -59,7 +59,7 @@ app.get("/", (req, res) => {
   res.send("✅ Backend is running!");
 });
 
-// ------------------ Routes ------------------
+// ------------------ API Routes ------------------
 app.use("/api/users", userRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/products", productRoutes);
