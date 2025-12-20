@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Product from "../models/Product.js";
+import Product from "../models/productModel.js";
 
 /**
  * Get all products (search & filter)

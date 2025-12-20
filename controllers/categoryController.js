@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Category from "../models/Category.js";
+import Category from "../models/categoryModel.js";
 
 /**
  * Create a new category

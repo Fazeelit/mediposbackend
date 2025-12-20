@@ -1,4 +1,4 @@
-import UserManagement from "../models/UserManagement.js";
+import UserManagement from "../models/UserManagementModel.js";
 import mongoose from "mongoose";
 
 /**

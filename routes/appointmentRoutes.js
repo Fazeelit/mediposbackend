@@ -7,10 +7,8 @@ import {
   deleteAppointment,
 } from "../controllers/appointmentController.js";
 
-import mongoose from "mongoose";
-import verifyToken, { verifAdmin } from "../middleware/authMiddleware.js";
-import validateId from "@/middleware/validateId.js";
-import { verifyAdmin } from "@/middleware/auth.js";
+import validateId from "../middleware/validateId.js";
+import verifyToken,{ verifyAdmin } from "../middleware/auth.js";
 const router = express.Router();
 
 /* =======================
