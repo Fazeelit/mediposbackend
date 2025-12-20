@@ -43,7 +43,7 @@ const getPatientById = async (req, res) => {
     const { id } = req.params;
 
     // ID is patientId (PAT-001), not Mongo _id
-    const patient = await Patient.findOne({ patientId: id });
+    const patient = await Patient.findOne({ id });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
