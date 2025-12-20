@@ -8,7 +8,7 @@ import {
 } from "../controllers/appointmentController.js";
 
 import validateId from "../middleware/validateId.js";
-import verifyToken,{ verifyAdmin } from "../middleware/auth.js";
+
 const router = express.Router();
 
 /* =======================
@@ -19,16 +19,16 @@ const router = express.Router();
 router.get("/", getAllAppointments);
 
 // Get single appointment
-router.get("/:id", validateId, verifyToken, verifyAdmin, getAppointmentById);
+router.get("/:id", validateId,getAppointmentById);
 
 // Create new appointment
-router.post("/createAppointment/", verifyToken, verifyAdmin, createAppointment);
+router.post("/createAppointment/", createAppointment);
 
 // Update appointment
-router.put("/updateAppointment/:id", verifyToken, verifyAdmin, updateAppointment);
+router.put("/updateAppointment/:id", updateAppointment);
 
 // Delete appointment
-router.delete("/deleteAppointment/:id", verifyToken, verifyAdmin, deleteAppointment);
+router.delete("/deleteAppointment/:id", deleteAppointment);
 
 /* =======================
    EXPORT
