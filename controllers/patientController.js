@@ -69,14 +69,18 @@ const getPatientById = async (req, res) => {
  */
 const createPatient = async (req, res) => {
   try {
-    const patient = await Patient.create(req.body);
+    console.log("Incoming patient data:", req.body); // <- DEBUG: log incoming data
+
+    // Create patient
+    const patient = await Patient.create(req.body);    
 
     res.status(201).json({
       success: true,
       message: "Patient created successfully",
       data: patient,
     });
-  } catch (error) {
+  } catch (error) {    
+
     if (error.code === 11000) {
       return res.status(400).json({
         message: "Patient ID already exists",

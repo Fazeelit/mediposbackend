@@ -32,6 +32,10 @@ const patientSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    address: {
+      type: String,      
+      trim: true,
+    },
 
     age: {
       type: Number,
@@ -46,6 +50,7 @@ const patientSchema = new mongoose.Schema(
     bloodGroup: {
       type: String,
       enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      default: "Nil",
     },
   },
   {
