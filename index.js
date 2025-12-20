@@ -20,7 +20,7 @@ import salesRoutes from "./routes/salesRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
 import userManagementRoutes from "./routes/UserManagementRoutes.js";
-import roleRoutes from "./routes/roleRoutes.js";
+import roleRoutes from "./routes/RoleRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 

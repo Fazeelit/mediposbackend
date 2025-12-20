@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Role from "../models/RoleModel.js";
+import Role from "../models/roleModel.js";
 
 /**
  * Create new role
