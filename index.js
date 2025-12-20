@@ -32,7 +32,7 @@ const app = express();
 
 // ------------------ CORS ------------------
 const allowedOrigins = [
-  "http://localhost:3000",
+  "http://0.0.0.0:8080",
   "https://muhafizoprojectit.vercel.app"
 ];
 
