@@ -20,13 +20,13 @@ router.get("/", getAllExpenses);
 router.get("/:id", getExpenseById);
 
 // Create new expense
-router.post("/", createExpense);
+router.post("/createExpense/", createExpense);
 
 // Update expense
-router.put("/:id", updateExpense);
+router.put("/updateExpense/:id", updateExpense);
 
 // Delete expense
-router.delete("/:id", deleteExpense);
+router.delete("/deleteExpense/:id", deleteExpense);
 
 /* =======================
    EXPORT

@@ -12,7 +12,7 @@ const router = express.Router();
 /* ================= CATEGORY ROUTES ================= */
 
 // Create a new category
-router.post("/", createCategory);
+router.post("/createCategory", createCategory);
 
 // Get all categories (with optional filters)
 router.get("/", getAllCategories);
@@ -21,10 +21,10 @@ router.get("/", getAllCategories);
 router.get("/:id", getCategoryById);
 
 // Update category
-router.put("/:id", updateCategory);
+router.put("/updateCategory/:id", updateCategory);
 
 // Soft delete category
-router.delete("/:id", deleteCategory);
+router.delete("/deleteCategory/:id", deleteCategory);
 
 /* ================= EXPORT ================= */
 

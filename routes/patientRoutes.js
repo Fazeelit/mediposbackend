@@ -20,13 +20,13 @@ router.get("/", getAllPatients);
 router.get("/:id", getPatientById);
 
 // Create new patient
-router.post("/", createPatient);
+router.post("/createPatient/", createPatient);
 
 // Update patient
-router.put("/:id", updatePatient);
+router.put("/updatePatient/:id", updatePatient);
 
 // Delete patient
-router.delete("/:id", deletePatient);
+router.delete("/deletePatient/:id", deletePatient);
 
 /* =======================
    EXPORT

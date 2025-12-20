@@ -13,7 +13,7 @@ const router = express.Router();
 /* ================= USER MANAGEMENT ROUTES ================= */
 
 // Create user
-router.post("/", createUser);
+router.post("/createUser", createUser);
 
 // Get all users
 router.get("/", getAllUsers);
@@ -22,13 +22,13 @@ router.get("/", getAllUsers);
 router.get("/:id", getUserById);
 
 // Update user
-router.put("/:id", updateUser);
+router.put("/updateUser/:id", updateUser);
 
 // Soft delete user
-router.delete("/:id", deleteUser);
+router.delete("/deleteUser/:id", deleteUser);
 
 // Update last login
-router.patch("/:id/last-login", updateLastLogin);
+router.patch("/last-login/:id", updateLastLogin);
 
 /* ================= EXPORT ================= */
 

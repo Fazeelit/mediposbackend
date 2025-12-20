@@ -20,13 +20,13 @@ router.get("/", getAllTests);
 router.get("/:id", getTestById);
 
 // Create new test
-router.post("/", createTest);
+router.post("/createTest", createTest);
 
 // Update test
-router.put("/:id", updateTest);
+router.put("/updateTest/:id", updateTest);
 
 // Delete test
-router.delete("/:id", deleteTest);
+router.delete("/deleteTest/:id", deleteTest);
 
 /* =======================
    EXPORT

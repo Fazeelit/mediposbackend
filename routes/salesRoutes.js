@@ -20,13 +20,13 @@ router.get("/", getAllSales);
 router.get("/:id", getSaleById);
 
 // Create new sale
-router.post("/", createSale);
+router.post("/createSale", createSale);
 
 // Update sale
-router.put("/:id", updateSale);
+router.put("/updateSale/:id", updateSale);
 
 // Delete sale
-router.delete("/:id", deleteSale);
+router.delete("/deleteSale/:id", deleteSale);
 
 /* =======================
    EXPORT

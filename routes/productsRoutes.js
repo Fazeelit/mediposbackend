@@ -24,13 +24,13 @@ router.get("/", getAllProducts);
 router.get("/:id", getProductById);
 
 // Create product
-router.post("/", createProduct);
+router.post("/createProduct", createProduct);
 
 // Update product
-router.put("/:id", updateProduct);
+router.put("/updateProduct/:id", updateProduct);
 
 // Delete product
-router.delete("/:id", deleteProduct);
+router.delete("/deleteProduct/:id", deleteProduct);
 
 /* =======================
    EXPORT

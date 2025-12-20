@@ -20,13 +20,13 @@ router.get("/", getAllDoctors);
 router.get("/:id", getDoctorById);
 
 // Create new doctor
-router.post("/", createDoctor);
+router.post("/createDoctor", createDoctor);
 
 // Update doctor
-router.put("/:id", updateDoctor);
+router.put("/updateDoctor/:id", updateDoctor);
 
 // Delete doctor
-router.delete("/:id", deleteDoctor);
+router.delete("/deleteDoctor/:id", deleteDoctor);
 
 /* =======================
    EXPORT

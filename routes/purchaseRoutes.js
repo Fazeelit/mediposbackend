@@ -20,13 +20,13 @@ router.get("/", getAllPurchases);
 router.get("/:id", getPurchaseById);
 
 // Create new purchase
-router.post("/", createPurchase);
+router.post("/createPurchase", createPurchase);
 
 // Update purchase
-router.put("/:id", updatePurchase);
+router.put("/updatePurchase/:id", updatePurchase);
 
 // Delete purchase
-router.delete("/:id", deletePurchase);
+router.delete("/deletePurchase/:id", deletePurchase);
 
 /* =======================
    EXPORT

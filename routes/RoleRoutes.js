@@ -13,7 +13,7 @@ const router = express.Router();
 /* ================= ROLE ROUTES ================= */
 
 // Create role
-router.post("/", createRole);
+router.post("/createRole", createRole);
 
 // Get all roles
 router.get("/", getAllRoles);
@@ -22,13 +22,13 @@ router.get("/", getAllRoles);
 router.get("/:id", getRoleById);
 
 // Update role
-router.put("/:id", updateRole);
+router.put("/updateRole/:id", updateRole);
 
 // Soft delete role
-router.delete("/:id", deleteRole);
+router.delete("/deleteRole/:id", deleteRole);
 
 // Update role permissions
-router.patch("/:id/permissions", updateRolePermissions);
+router.patch("/permissions/:id", updateRolePermissions);
 
 /* ================= EXPORT ================= */
 
