@@ -35,7 +35,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3000", // local frontend
   "http://0.0.0.0:8080",
-  "https://muhafizoprojectit.vercel.app"
+  "https://mediposfrontendproject.vercel.app/"
 ];
 
 app.use(cors({
