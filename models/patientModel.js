@@ -21,13 +21,6 @@ const patientSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
-    emergency: {
-      type: String,
-      trim: true,
-      default: "Nil",
-    },
-
     email: {
       type: String,
       lowercase: true,

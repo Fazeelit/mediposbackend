@@ -70,8 +70,7 @@ const createPatient = async (req, res) => {
     const {
       patientId,
       name,
-      phone,
-      emergency = "Nil",
+      phone,     
       email = "Nil",
       address = "Nil",
       age = 0,
@@ -83,8 +82,7 @@ const createPatient = async (req, res) => {
     const patient = await Patient.create({
       patientId,
       name,
-      phone,
-      emergency,
+      phone,     
       email,
       address,
       age,
@@ -122,8 +120,7 @@ const updatePatient = async (req, res) => {
 
     const updateData = {
       ...req.body,
-      email: req.body.email || "Nil",
-      emergency: req.body.emergency || "Nil",
+      email: req.body.email || "Nil",      
       address: req.body.address || "Nil",
       age: req.body.age || 0,
       gender: req.body.gender || "Other",
