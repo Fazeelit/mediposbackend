@@ -18,6 +18,7 @@ const purchaseSchema = new mongoose.Schema(
         name: { type: String, required: true, trim: true },
         quantity: { type: Number, required: true, min: 0 },
         price: { type: Number, required: true, min: 0 },
+        manufacturer:{ type: String, required: true, trim: true },
       },
     ],
 
@@ -42,12 +43,7 @@ const purchaseSchema = new mongoose.Schema(
     purchaseDate: {
       type: Date,
       default: Date.now,
-    },
-
-    notes: {
-      type: String,
-      trim: true,
-    },
+    },    
   },
   {
     timestamps: true,

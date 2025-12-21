@@ -186,6 +186,14 @@ const getProductStats = async (req, res) => {
     });
   }
 };
+const getProductName = async (req, res) => {
+  try {
+    const products = await Product.find({}, "name"); // only return name
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+};
 
 /* =======================
    EXPORTS (AT END)
@@ -198,4 +206,5 @@ export {
   updateProduct,
   deleteProduct,
   getProductStats,
+  getProductName
 };
