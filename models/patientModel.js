@@ -21,38 +21,36 @@ const patientSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    email: {
-      type: String,
-      lowercase: true,
-      trim: true,
-      default: "Nil",
-    },
-
     address: {
-      type: String,      
+      type: String,
+      required: true,      
       trim: true,
       default: "Nil",
     },
 
     age: {
       type: Number,
+      required: true,
       min: 0,
       default: 0,
     },
 
     gender: {
       type: String,
+      required: true,
       enum: ["Male", "Female", "Other"],
       default: "Other",
     },
 
     temperature: {
       type: Number,
+      required: true,
       default: 0,
     },
 
     bloodpressure: {
       type: String,
+      required: true,
       trim: true,
       default: "Nil",
     },
