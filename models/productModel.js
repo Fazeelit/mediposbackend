@@ -7,13 +7,6 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
-    manufacturer: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
     code: {
       type: String,
       required: true,
@@ -21,44 +14,57 @@ const productSchema = new mongoose.Schema(
       uppercase: true,
       trim: true,
     },
-
     category: {
       type: String,
       required: true,
       trim: true,
     },
-
     price: {
       type: Number,
       required: true,
       min: 0,
     },
-
+    mrp: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    tax: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
     cost: {
       type: Number,
       required: true,
       min: 0,
     },
-
     stock: {
       type: Number,
       required: true,
       min: 0,
       default: 0,
     },
-
+    manufacturer: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     unit: {
       type: String,
       required: true,
       enum: ["Strip", "Piece", "Box", "Bottle"],
     },
-
     status: {
       type: String,
       enum: ["Active", "Inactive"],
       default: "Active",
     },
-
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     lowStock: {
       type: Boolean,
       default: false,
