@@ -25,6 +25,7 @@ const patientSchema = new mongoose.Schema(
     emergency: {
       type: String,
       trim: true,
+      default: "Nil",
     },
 
     email: {
@@ -33,24 +34,33 @@ const patientSchema = new mongoose.Schema(
       trim: true,
       default: "Nil",
     },
+
     address: {
       type: String,      
       trim: true,
+      default: "Nil",
     },
 
     age: {
       type: Number,
       min: 0,
+      default: 0,
     },
 
     gender: {
       type: String,
       enum: ["Male", "Female", "Other"],
+      default: "Other",
     },
 
-    bloodGroup: {
+    temperature: {
+      type: Number,
+      default: 0,
+    },
+
+    bloodpressure: {
       type: String,
-      enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      trim: true,
       default: "Nil",
     },
   },

@@ -43,12 +43,10 @@ const getPatientById = async (req, res) => {
     const { id } = req.params;
     let patient = null;
 
-    // Check if valid MongoDB _id
     if (mongoose.Types.ObjectId.isValid(id)) {
       patient = await Patient.findById(id);
     }
 
-    // Fallback to patientId
     if (!patient) {
       patient = await Patient.findOne({ patientId: id });
     }
@@ -69,18 +67,38 @@ const getPatientById = async (req, res) => {
  */
 const createPatient = async (req, res) => {
   try {
-    console.log("Incoming patient data:", req.body); // <- DEBUG: log incoming data
+    const {
+      patientId,
+      name,
+      phone,
+      emergency = "Nil",
+      email = "Nil",
+      address = "Nil",
+      age = 0,
+      gender = "Other",
+      temperature = 0,
+      bloodpressure = "Nil",
+    } = req.body;
 
-    // Create patient
-    const patient = await Patient.create(req.body);    
+    const patient = await Patient.create({
+      patientId,
+      name,
+      phone,
+      emergency,
+      email,
+      address,
+      age,
+      gender,
+      temperature,
+      bloodpressure,
+    });
 
     res.status(201).json({
       success: true,
       message: "Patient created successfully",
       data: patient,
     });
-  } catch (error) {    
-
+  } catch (error) {
     if (error.code === 11000) {
       return res.status(400).json({
         message: "Patient ID already exists",
@@ -102,13 +120,21 @@ const updatePatient = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const updateData = {
+      ...req.body,
+      email: req.body.email || "Nil",
+      emergency: req.body.emergency || "Nil",
+      address: req.body.address || "Nil",
+      age: req.body.age || 0,
+      gender: req.body.gender || "Other",
+      temperature: req.body.temperature || 0,
+      bloodpressure: req.body.bloodpressure || "Nil",
+    };
+
     const patient = await Patient.findOneAndUpdate(
       { patientId: id },
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
+      updateData,
+      { new: true, runValidators: true }
     );
 
     if (!patient) {
@@ -153,10 +179,6 @@ const deletePatient = async (req, res) => {
     });
   }
 };
-
-/* =======================
-   EXPORTS (AT END)
-======================= */
 
 export {
   getAllPatients,
