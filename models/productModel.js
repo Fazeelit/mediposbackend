@@ -23,17 +23,7 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
-    },
-    mrp: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    tax: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+    },    
     cost: {
       type: Number,
       required: true,
@@ -56,8 +46,7 @@ const productSchema = new mongoose.Schema(
       enum: ["Strip", "Piece", "Box", "Bottle"],
     },
     date:{
-      type: Date,
-      required: true, 
+      type: Date,      
       default: Date.now,
     },
     status: {
@@ -66,8 +55,7 @@ const productSchema = new mongoose.Schema(
       default: "Active",
     },
     description: {
-      type: String,
-      required: true,
+      type: String,     
       trim: true,
     },
     lowStock: {
