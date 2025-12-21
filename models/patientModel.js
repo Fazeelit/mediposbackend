@@ -31,6 +31,7 @@ const patientSchema = new mongoose.Schema(
       type: String,
       lowercase: true,
       trim: true,
+      default: "Nil",
     },
     address: {
       type: String,      
