@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const supplierSchema = new mongoose.Schema(
+const purchaseSchema = new mongoose.Schema(
   {
     supplier: {
       type: String,
@@ -78,6 +78,6 @@ supplierSchema.pre("save", function (next) {
   next();
 });
 
-const Supplier = mongoose.model("Supplier", supplierSchema);
+const Purchase = mongoose.model("Purchase", purchaseSchema);
 
-export default Supplier;
+export default Purchase;

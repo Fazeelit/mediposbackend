@@ -1,201 +1,202 @@
 import mongoose from "mongoose";
-import Supplier from "../models/supplierModel.js";
+import Purchase from "../models/purchaseModel.js";
 
-/**
- * Get all suppliers
- * GET /api/suppliers
- */
-const getAllSuppliers = async (req, res) => {
+/* =======================
+   GET ALL PURCHASES
+   GET /api/purchases
+======================= */
+const getAllPurchases = async (req, res) => {
   try {
-    const suppliers = await Supplier.find()
+    const purchases = await Purchase.find()
       .populate("products.productId", "name code manufacturer")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      count: suppliers.length,
-      data: suppliers,
+      count: purchases.length,
+      data: purchases,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Failed to fetch suppliers",
+      message: "Failed to fetch purchases",
       error: error.message,
     });
   }
 };
 
-/**
- * Get single supplier by ID
- * GET /api/suppliers/:id
- */
-const getSupplierById = async (req, res) => {
+/* =======================
+   GET PURCHASE BY ID
+   GET /api/purchases/:id
+======================= */
+const getPurchaseById = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid Supplier ID" });
+      return res.status(400).json({ message: "Invalid purchase ID" });
     }
 
-    const supplier = await Supplier.findById(id).populate(
+    const purchase = await Purchase.findById(id).populate(
       "products.productId",
       "name code manufacturer"
     );
 
-    if (!supplier) {
-      return res.status(404).json({ message: "Supplier not found" });
+    if (!purchase) {
+      return res.status(404).json({ message: "Purchase not found" });
     }
 
     res.status(200).json({
       success: true,
-      data: supplier,
+      data: purchase,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Failed to fetch supplier",
+      message: "Failed to fetch purchase",
       error: error.message,
     });
   }
 };
 
-/**
- * Create new supplier
- * POST /api/suppliers
- */
-const createSupplier = async (req, res) => {
+/* =======================
+   CREATE PURCHASE
+   POST /api/purchases
+======================= */
+const createPurchase = async (req, res) => {
   try {
-    const supplier = new Supplier(req.body);
+    const purchase = new Purchase(req.body);
 
-    // Recalculate totalAmount, balance, and status
-    supplier.totalAmount = supplier.products.reduce(
-      (acc, item) => acc + item.price * item.quantity,
+    // Calculate totals
+    purchase.totalAmount = purchase.products.reduce(
+      (sum, item) => sum + item.price * item.quantity,
       0
     );
-    supplier.balance = supplier.totalAmount - supplier.paidAmount;
 
-    if (supplier.paidAmount === 0) {
-      supplier.status = "Pending";
-    } else if (supplier.paidAmount < supplier.totalAmount) {
-      supplier.status = "Partial";
+    purchase.balance = purchase.totalAmount - purchase.paidAmount;
+
+    if (purchase.paidAmount === 0) {
+      purchase.status = "Pending";
+    } else if (purchase.paidAmount < purchase.totalAmount) {
+      purchase.status = "Partial";
     } else {
-      supplier.status = "Paid";
-      supplier.balance = 0;
+      purchase.status = "Paid";
+      purchase.balance = 0;
     }
 
-    await supplier.save();
+    await purchase.save();
 
     res.status(201).json({
       success: true,
-      message: "Supplier created successfully",
-      data: supplier,
+      message: "Purchase created successfully",
+      data: purchase,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Failed to create supplier",
+      message: "Failed to create purchase",
       error: error.message,
     });
   }
 };
 
-/**
- * Update supplier
- * PUT /api/suppliers/:id
- */
-const updateSupplier = async (req, res) => {
+/* =======================
+   UPDATE PURCHASE
+   PUT /api/purchases/:id
+======================= */
+const updatePurchase = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid Supplier ID" });
+      return res.status(400).json({ message: "Invalid purchase ID" });
     }
 
-    const supplier = await Supplier.findById(id);
+    const purchase = await Purchase.findById(id);
 
-    if (!supplier) {
-      return res.status(404).json({ message: "Supplier not found" });
+    if (!purchase) {
+      return res.status(404).json({ message: "Purchase not found" });
     }
 
-    // Update fields
-    Object.assign(supplier, req.body);
+    Object.assign(purchase, req.body);
 
-    // Recalculate totalAmount, balance, and status
-    supplier.totalAmount = supplier.products.reduce(
-      (acc, item) => acc + item.price * item.quantity,
+    // Recalculate totals
+    purchase.totalAmount = purchase.products.reduce(
+      (sum, item) => sum + item.price * item.quantity,
       0
     );
-    supplier.balance = supplier.totalAmount - supplier.paidAmount;
 
-    if (supplier.paidAmount === 0) {
-      supplier.status = "Pending";
-    } else if (supplier.paidAmount < supplier.totalAmount) {
-      supplier.status = "Partial";
+    purchase.balance = purchase.totalAmount - purchase.paidAmount;
+
+    if (purchase.paidAmount === 0) {
+      purchase.status = "Pending";
+    } else if (purchase.paidAmount < purchase.totalAmount) {
+      purchase.status = "Partial";
     } else {
-      supplier.status = "Paid";
-      supplier.balance = 0;
+      purchase.status = "Paid";
+      purchase.balance = 0;
     }
 
-    await supplier.save();
+    await purchase.save();
 
     res.status(200).json({
       success: true,
-      message: "Supplier updated successfully",
-      data: supplier,
+      message: "Purchase updated successfully",
+      data: purchase,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Failed to update supplier",
+      message: "Failed to update purchase",
       error: error.message,
     });
   }
 };
 
-/**
- * Delete supplier
- * DELETE /api/suppliers/:id
- */
-const deleteSupplier = async (req, res) => {
+/* =======================
+   DELETE PURCHASE
+   DELETE /api/purchases/:id
+======================= */
+const deletePurchase = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid Supplier ID" });
+      return res.status(400).json({ message: "Invalid purchase ID" });
     }
 
-    const supplier = await Supplier.findByIdAndDelete(id);
+    const purchase = await Purchase.findByIdAndDelete(id);
 
-    if (!supplier) {
-      return res.status(404).json({ message: "Supplier not found" });
+    if (!purchase) {
+      return res.status(404).json({ message: "Purchase not found" });
     }
 
     res.status(200).json({
       success: true,
-      message: "Supplier deleted successfully",
+      message: "Purchase deleted successfully",
     });
   } catch (error) {
     res.status(500).json({
-      message: "Failed to delete supplier",
+      message: "Failed to delete purchase",
       error: error.message,
     });
   }
 };
 
-/**
- * Get supplier names only
- * GET /api/suppliers/names
- */
-const getSupplierNames = async (req, res) => {
+/* =======================
+   GET PURCHASE LIST (MINIMAL)
+   GET /api/purchases/list
+======================= */
+const getPurchaseList = async (req, res) => {
   try {
-    const suppliers = await Supplier.find(
-      {}, // you can filter by status if needed
-      { _id: 1, supplier: 1 }
-    ).sort({ supplier: 1 });
+    const purchases = await Purchase.find(
+      {},
+      { _id: 1, invoiceNumber: 1, supplier: 1 }
+    ).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      data: suppliers,
+      data: purchases,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Failed to fetch supplier names",
+      message: "Failed to fetch purchase list",
       error: error.message,
     });
   }
@@ -205,10 +206,10 @@ const getSupplierNames = async (req, res) => {
    EXPORTS
 ======================= */
 export {
-  getAllSuppliers,
-  getSupplierById,
-  createSupplier,
-  updateSupplier,
-  deleteSupplier,
-  getSupplierNames,
+  getAllPurchases,
+  getPurchaseById,
+  createPurchase,
+  updatePurchase,
+  deletePurchase,
+  getPurchaseList,
 };
