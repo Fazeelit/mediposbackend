@@ -6,12 +6,12 @@ import {
   updateSupplier,
   deleteSupplier,
   getSupplierNames
-} from "../controllers/purchaseController.js";
+} from "../controllers/supplierController.js";
 
 const router = express.Router();
 
 /* =======================
-   PURCHASE ROUTES
+   SUPPLIER ROUTES
 ======================= */
 
 // Get all suppliers
