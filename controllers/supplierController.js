@@ -8,7 +8,7 @@ import Supplier from "../models/supplierModel.js";
 const getAllSuppliers = async (req, res) => {
   try {
     const suppliers = await Supplier.find()
-      .populate("medicines.medicineId", "name code")
+      .populate("products.productId", "name code manufacturer")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -37,8 +37,8 @@ const getSupplierById = async (req, res) => {
     }
 
     const supplier = await Supplier.findById(id).populate(
-      "medicines.medicineId",
-      "name code"
+      "products.productId",
+      "name code manufacturer"
     );
 
     if (!supplier) {
@@ -63,7 +63,25 @@ const getSupplierById = async (req, res) => {
  */
 const createSupplier = async (req, res) => {
   try {
-    const supplier = await Supplier.create(req.body);
+    const supplier = new Supplier(req.body);
+
+    // Recalculate totalAmount, balance, and status
+    supplier.totalAmount = supplier.products.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    );
+    supplier.balance = supplier.totalAmount - supplier.paidAmount;
+
+    if (supplier.paidAmount === 0) {
+      supplier.status = "Pending";
+    } else if (supplier.paidAmount < supplier.totalAmount) {
+      supplier.status = "Partial";
+    } else {
+      supplier.status = "Paid";
+      supplier.balance = 0;
+    }
+
+    await supplier.save();
 
     res.status(201).json({
       success: true,
@@ -90,14 +108,32 @@ const updateSupplier = async (req, res) => {
       return res.status(400).json({ message: "Invalid Supplier ID" });
     }
 
-    const supplier = await Supplier.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const supplier = await Supplier.findById(id);
 
     if (!supplier) {
       return res.status(404).json({ message: "Supplier not found" });
     }
+
+    // Update fields
+    Object.assign(supplier, req.body);
+
+    // Recalculate totalAmount, balance, and status
+    supplier.totalAmount = supplier.products.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    );
+    supplier.balance = supplier.totalAmount - supplier.paidAmount;
+
+    if (supplier.paidAmount === 0) {
+      supplier.status = "Pending";
+    } else if (supplier.paidAmount < supplier.totalAmount) {
+      supplier.status = "Partial";
+    } else {
+      supplier.status = "Paid";
+      supplier.balance = 0;
+    }
+
+    await supplier.save();
 
     res.status(200).json({
       success: true,
@@ -149,9 +185,9 @@ const deleteSupplier = async (req, res) => {
 const getSupplierNames = async (req, res) => {
   try {
     const suppliers = await Supplier.find(
-      { status: "Active" },     // optional filter
-      { _id: 1, name: 1 }        // only id & name
-    ).sort({ name: 1 });
+      {}, // you can filter by status if needed
+      { _id: 1, supplier: 1 }
+    ).sort({ supplier: 1 });
 
     res.status(200).json({
       success: true,
@@ -165,16 +201,14 @@ const getSupplierNames = async (req, res) => {
   }
 };
 
-
 /* =======================
    EXPORTS
 ======================= */
-
 export {
   getAllSuppliers,
   getSupplierById,
   createSupplier,
   updateSupplier,
   deleteSupplier,
-  getSupplierNames
+  getSupplierNames,
 };
