@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const purchaseSchema = new mongoose.Schema(
+const supplierSchema = new mongoose.Schema(
   {
     supplier: {
       type: String,
@@ -50,6 +50,6 @@ const purchaseSchema = new mongoose.Schema(
   }
 );
 
-const Purchase = mongoose.model("Purchase", purchaseSchema);
+const Supplier = mongoose.model("Supplier", supplierSchema);
 
-export default Purchase;
+export default Supplier;
