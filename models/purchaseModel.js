@@ -58,7 +58,7 @@ const purchaseSchema = new mongoose.Schema(
 );
 
 // Pre-save hook to calculate totalAmount and balance
-supplierSchema.pre("save", function (next) {
+purchaseSchema.pre("save", function (next) {
   // Calculate totalAmount from all products
   this.totalAmount = this.products.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
