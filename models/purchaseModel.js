@@ -7,6 +7,11 @@ const purchaseSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    invoiceNumber: {
+      type: Number,
+      required: true,
+      trim: true,
+    },
 
     products: [
       {
