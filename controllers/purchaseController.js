@@ -3,7 +3,6 @@ import Purchase from "../models/purchaseModel.js";
 
 /* =======================
    GET ALL PURCHASES
-   GET /api/purchases
 ======================= */
 const getAllPurchases = async (req, res) => {
   try {
@@ -26,7 +25,6 @@ const getAllPurchases = async (req, res) => {
 
 /* =======================
    GET PURCHASE BY ID
-   GET /api/purchases/:id
 ======================= */
 const getPurchaseById = async (req, res) => {
   try {
@@ -59,30 +57,10 @@ const getPurchaseById = async (req, res) => {
 
 /* =======================
    CREATE PURCHASE
-   POST /api/purchases
 ======================= */
 const createPurchase = async (req, res) => {
   try {
-    const purchase = new Purchase(req.body);
-
-    // Calculate totals
-    purchase.totalAmount = purchase.products.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
-    purchase.balance = purchase.totalAmount - purchase.paidAmount;
-
-    if (purchase.paidAmount === 0) {
-      purchase.status = "Pending";
-    } else if (purchase.paidAmount < purchase.totalAmount) {
-      purchase.status = "Partial";
-    } else {
-      purchase.status = "Paid";
-      purchase.balance = 0;
-    }
-
-    await purchase.save();
+    const purchase = await Purchase.create(req.body);
 
     res.status(201).json({
       success: true,
@@ -90,7 +68,7 @@ const createPurchase = async (req, res) => {
       data: purchase,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       message: "Failed to create purchase",
       error: error.message,
     });
@@ -99,7 +77,6 @@ const createPurchase = async (req, res) => {
 
 /* =======================
    UPDATE PURCHASE
-   PUT /api/purchases/:id
 ======================= */
 const updatePurchase = async (req, res) => {
   try {
@@ -110,31 +87,12 @@ const updatePurchase = async (req, res) => {
     }
 
     const purchase = await Purchase.findById(id);
-
     if (!purchase) {
       return res.status(404).json({ message: "Purchase not found" });
     }
 
     Object.assign(purchase, req.body);
-
-    // Recalculate totals
-    purchase.totalAmount = purchase.products.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
-    purchase.balance = purchase.totalAmount - purchase.paidAmount;
-
-    if (purchase.paidAmount === 0) {
-      purchase.status = "Pending";
-    } else if (purchase.paidAmount < purchase.totalAmount) {
-      purchase.status = "Partial";
-    } else {
-      purchase.status = "Paid";
-      purchase.balance = 0;
-    }
-
-    await purchase.save();
+    await purchase.save(); // triggers schema middleware
 
     res.status(200).json({
       success: true,
@@ -142,7 +100,7 @@ const updatePurchase = async (req, res) => {
       data: purchase,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       message: "Failed to update purchase",
       error: error.message,
     });
@@ -151,7 +109,6 @@ const updatePurchase = async (req, res) => {
 
 /* =======================
    DELETE PURCHASE
-   DELETE /api/purchases/:id
 ======================= */
 const deletePurchase = async (req, res) => {
   try {
@@ -162,7 +119,6 @@ const deletePurchase = async (req, res) => {
     }
 
     const purchase = await Purchase.findByIdAndDelete(id);
-
     if (!purchase) {
       return res.status(404).json({ message: "Purchase not found" });
     }
@@ -180,8 +136,7 @@ const deletePurchase = async (req, res) => {
 };
 
 /* =======================
-   GET PURCHASE LIST (MINIMAL)
-   GET /api/purchases/list
+   PURCHASE LIST (MINIMAL)
 ======================= */
 const getPurchaseList = async (req, res) => {
   try {
@@ -202,9 +157,6 @@ const getPurchaseList = async (req, res) => {
   }
 };
 
-/* =======================
-   EXPORTS
-======================= */
 export {
   getAllPurchases,
   getPurchaseById,
