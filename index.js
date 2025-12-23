@@ -9,8 +9,7 @@ dotenv.config();
 import dbConnect from "./config/database.js";
 import config from "./config/config.js";
 
-// ------------------ Routes ------------------
-// Make sure these files exist in ./routes folder
+// Routes
 import userRoutes from "./routes/usersroute.js";
 import adminRoutes from "./routes/adminroute.js";
 import productRoutes from "./routes/productsRoutes.js";
@@ -26,40 +25,51 @@ import roleRoutes from "./routes/RoleRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 
-// ------------------ Connect DB ------------------
+// DB
 dbConnect();
 
 const app = express();
 
-// ------------------ CORS ------------------
+/* =======================
+   CORS
+======================= */
 const allowedOrigins = [
-  "http://localhost:3000", // local frontend
-  "http://0.0.0.0:8080",
-  "https://mediposfrontendproject.vercel.app"
+  "http://localhost:3000",
+  "https://mediposfrontendproject.vercel.app",
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-// ------------------ Middleware ------------------
-app.use(express.json({ limit: "2gb" }));
-app.use(express.urlencoded({ extended: true, limit: "2gb" }));
+/* =======================
+   Middleware
+======================= */
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(morgan("dev"));
 
-// ------------------ Root ------------------
+/* =======================
+   Root
+======================= */
 app.get("/", (req, res) => {
   res.send("✅ Backend is running!");
 });
 
-// ------------------ API Routes ------------------
+/* =======================
+   API Routes
+======================= */
 app.use("/api/users", userRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/products", productRoutes);
@@ -70,28 +80,37 @@ app.use("/api/purchases", purchaseRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/tests", testRoutes);
 app.use("/api/expenses", expenseRoutes);
-app.use("/api/users", userManagementRoutes);
+app.use("/api/user-management", userManagementRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/categories", categoryRoutes);
 
-// ------------------ 404 API ------------------
-app.all(/^\/api\/.*$/, (req, res) => {
+/* =======================
+   404 API
+======================= */
+app.all("/api/*", (req, res) => {
   res.status(404).json({ message: "API route not found" });
 });
 
-// ------------------ Error Handler ------------------
+/* =======================
+   Error Handler
+======================= */
 app.use((err, req, res, next) => {
   console.error("⚠️ Error:", err.message);
-  res.status(500).json({ message: err.message });
+
+  res.status(err.status || 500).json({
+    message: err.message || "Internal server error",
+  });
 });
 
-// ------------------ Server ------------------
+/* =======================
+   Server
+======================= */
 const PORT = config.port || 8080;
 const HOST = "0.0.0.0";
 
 const server = http.createServer(app);
-server.timeout = 2 * 60 * 60 * 1000; // 2 hours
+server.timeout = 5 * 60 * 1000; // 5 minutes
 
 server.listen(PORT, HOST, () => {
   console.log(`🚀 Server running at http://${HOST}:${PORT}`);
