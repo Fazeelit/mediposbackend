@@ -55,13 +55,20 @@ const purchaseSchema = new mongoose.Schema(
       min: 0,
     },
 
-    status: {
+    // ✅ PAYMENT STATUS (matches frontend Payment Status)
+    paymentStatus: {
       type: String,
       enum: ["Pending", "Partial", "Paid"],
       required: true,
     },
 
-    // ✅ KEEP balance field but do NOT calculate it here
+    // ✅ PURCHASE LIFECYCLE STATUS
+    purchaseStatus: {
+      type: String,
+      enum: ["Draft", "Received", "Completed"],
+      default: "Draft",
+    },
+
     balance: {
       type: Number,
       required: true,
