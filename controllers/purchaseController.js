@@ -60,7 +60,41 @@ const getPurchaseById = async (req, res) => {
 ======================= */
 const createPurchase = async (req, res) => {
   try {
-    const purchase = await Purchase.create(req.body);
+    // Destructure all fields from req.body
+    const {
+      supplier,
+      purchaseDate,
+      invoiceNumber,
+      totalAmount,
+      paidAmount,
+      paymentStatus,
+      purchaseStatus,
+      balance,
+      taxAmount,
+      products,
+    } = req.body;
+
+    // Basic validation
+    if (!supplier || !purchaseDate || !invoiceNumber || !products?.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Supplier, purchase date, invoice number, and products are required",
+      });
+    }
+
+    // Create new purchase
+    const purchase = await Purchase.create({
+      supplier,
+      purchaseDate,
+      invoiceNumber,
+      totalAmount,
+      paidAmount: paidAmount || 0,
+      paymentStatus: paymentStatus || "Pending",
+      purchaseStatus: purchaseStatus || "Draft",
+      balance: balance || totalAmount,
+      taxAmount: taxAmount || 0,
+      products,
+    });
 
     res.status(201).json({
       success: true,
@@ -68,13 +102,14 @@ const createPurchase = async (req, res) => {
       data: purchase,
     });
   } catch (error) {
+    console.error(error);
     res.status(400).json({
+      success: false,
       message: "Failed to create purchase",
       error: error.message,
     });
   }
 };
-
 /* =======================
    UPDATE PURCHASE
 ======================= */
