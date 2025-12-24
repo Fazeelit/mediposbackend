@@ -68,14 +68,6 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-/**
- * Auto-calculate lowStock before save
- * (matches frontend logic: stock <= 10)
- */
-productSchema.pre("save", function (next) {
-  this.lowStock = this.stock <= 10;
-  next();
-});
 
 /**
  * Auto-calculate lowStock on update queries
