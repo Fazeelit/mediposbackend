@@ -23,7 +23,7 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
-    },    
+    },
     cost: {
       type: Number,
       required: true,
@@ -42,11 +42,11 @@ const productSchema = new mongoose.Schema(
     },
     unit: {
       type: String,
-      required: true,
       enum: ["Strip", "Piece", "Box", "Bottle"],
+      default: "Piece",
     },
-    date:{
-      type: Date,      
+    date: {
+      type: Date,
       default: Date.now,
     },
     status: {
@@ -55,7 +55,7 @@ const productSchema = new mongoose.Schema(
       default: "Active",
     },
     description: {
-      type: String,     
+      type: String,
       trim: true,
     },
     lowStock: {
@@ -74,6 +74,19 @@ const productSchema = new mongoose.Schema(
  */
 productSchema.pre("save", function (next) {
   this.lowStock = this.stock <= 10;
+  next();
+});
+
+/**
+ * Auto-calculate lowStock on update queries
+ * (for findOneAndUpdate / findByIdAndUpdate)
+ */
+productSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  if (update.stock !== undefined) {
+    update.lowStock = update.stock <= 10;
+    this.setUpdate(update);
+  }
   next();
 });
 
