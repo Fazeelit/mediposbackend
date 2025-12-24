@@ -24,7 +24,7 @@ router.get("/", getAllProducts);
 router.get("/ProductName", getProductName);
 
 // Get single product
-router.get("/:id", getProductById);
+router.get("/getProductById/:id", getProductById);
 
 // Create product
 router.post("/createProduct", createProduct);
