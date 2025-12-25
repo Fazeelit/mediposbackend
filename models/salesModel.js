@@ -29,8 +29,8 @@ const saleSchema = new mongoose.Schema(
 
     paidAmount: {
       type: Number,
-      default: 0,
       min: 0,
+      default: 0, // will be overwritten by pre-save
     },
 
     paymentStatus: {
@@ -53,6 +53,17 @@ const saleSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// 🔹 Pre-save middleware to assign totalAmount to paidAmount
+saleSchema.pre("save", function (next) {
+  if (this.isNew && (!this.paidAmount || this.paidAmount === 0)) {
+    this.paidAmount = this.totalAmount;
+    if (this.totalAmount > 0) {
+      this.paymentStatus = "Paid"; // optional: mark as Paid automatically
+    }
+  }
+  next();
+});
 
 const Sale = mongoose.model("Sale", saleSchema);
 
