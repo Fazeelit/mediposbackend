@@ -9,44 +9,40 @@ dotenv.config();
 import dbConnect from "./config/database.js";
 import config from "./config/config.js";
 
+// ------------------ Routes ------------------
 import userRoutes from "./routes/usersroute.js";
 import adminRoutes from "./routes/adminroute.js";
-import bookRoutes from "./routes/bookRoutes.js";
-import videoRoutes from "./routes/videoRoutes.js";
-import emergencyRoutes from "./routes/emergencyRoutes.js";
-import bookingRoutes from "./routes/bookingRoutes.js";
-import reportRoutes from "./routes/reportRoutes.js";
-import newsRoutes from "./routes/newsRoutes.js";
-import helplinRoutes from "./routes/helplineRoutes.js";
-import enrollmentRoutes from "./routes/enrollmentRoutes.js";
-import courseRoutes from "./routes/courseRoutes.js";
-import messageRoutes from "./routes/messageRoutes.js";
+import productRoutes from "./routes/productsRoutes.js";
+import appointmentRoutes from "./routes/appointmentRoutes.js";
+import patientRoutes from "./routes/patientRoutes.js";
+import doctorRoutes from "./routes/doctorRoutes.js";
+import purchaseRoutes from "./routes/purchaseRoutes.js";
+import salesRoutes from "./routes/salesRoutes.js";
+import testRoutes from "./routes/testRoutes.js";
+import expenseRoutes from "./routes/expenseRoutes.js";
+import userManagementRoutes from "./routes/UserManagementRoutes.js";
+import roleRoutes from "./routes/RoleRoutes.js";
+import activityRoutes from "./routes/activityRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 
 // ------------------ DB ------------------
 dbConnect();
 
 const app = express();
 
-// ------------------ CORS (PRODUCTION SAFE) ------------------
+// ------------------ CORS ------------------
 const allowedOrigins = ["http://localhost:3000"];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow Postman / server-to-server
       if (!origin) return callback(null, true);
 
-      // Allow localhost
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+      if (allowedOrigins.includes(origin)) return callback(null, true);
 
-      // Allow ALL Vercel deployments (prod + preview)
-      if (origin.endsWith(".vercel.app")) {
-        return callback(null, true);
-      }
+      if (origin.endsWith(".vercel.app")) return callback(null, true);
 
-      return callback(new Error("Not allowed by CORS"));
+      return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -54,12 +50,17 @@ app.use(
   })
 );
 
-// 🔥 FIX PREFLIGHT REQUESTS
-app.options("*", cors());
+// ✅ Preflight handler (NO crash)
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 // ------------------ Middleware ------------------
-app.use(express.json({ limit: "2gb" }));
-app.use(express.urlencoded({ extended: true, limit: "2gb" }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 // ------------------ Root ------------------
@@ -67,40 +68,31 @@ app.get("/", (req, res) => {
   res.send("✅ Backend is running!");
 });
 
-// ------------------ Routes ------------------
+// ------------------ API Routes ------------------
 app.use("/api/users", userRoutes);
 app.use("/api/admins", adminRoutes);
-app.use("/api/books", bookRoutes);
-app.use("/api/videos", videoRoutes);
-app.use("/api/emergencies", emergencyRoutes);
-app.use("/api/bookings", bookingRoutes);
-app.use("/api/reports", reportRoutes);
-app.use("/api/news", newsRoutes);
-app.use("/api/helpline", helplinRoutes);
-app.use("/api/enrollments", enrollmentRoutes);
-app.use("/api/courses", courseRoutes);
-app.use("/api/messages", messageRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/patients", patientRoutes);
+app.use("/api/doctors", doctorRoutes);
+app.use("/api/purchases", purchaseRoutes);
+app.use("/api/sales", salesRoutes);
+app.use("/api/tests", testRoutes);
+app.use("/api/expenses", expenseRoutes);
+app.use("/api/users", userManagementRoutes);
+app.use("/api/roles", roleRoutes);
+app.use("/api/activities", activityRoutes);
+app.use("/api/categories", categoryRoutes);
 
 // ------------------ 404 API ------------------
 app.all(/^\/api\/.*$/, (req, res) => {
-  res.status(404).json({ success: false, message: "API route not found" });
+  res.status(404).json({ message: "API route not found" });
 });
 
 // ------------------ Error Handler ------------------
 app.use((err, req, res, next) => {
-  console.error("⚠️ Error:", err.message);
-
-  if (err.message === "Not allowed by CORS") {
-    return res.status(403).json({
-      success: false,
-      message: "CORS error: Origin not allowed",
-    });
-  }
-
-  res.status(500).json({
-    success: false,
-    message: err.message,
-  });
+  console.error("⚠️ Error:", err);
+  res.status(500).json({ message: err.message || "Internal Server Error" });
 });
 
 // ------------------ Server ------------------
@@ -108,7 +100,7 @@ const PORT = config.port || 8080;
 const HOST = "0.0.0.0";
 
 const server = http.createServer(app);
-server.timeout = 2 * 60 * 60 * 1000;
+server.timeout = 5 * 60 * 1000;
 
 server.listen(PORT, HOST, () => {
   console.log(`🚀 Server running at http://${HOST}:${PORT}`);
