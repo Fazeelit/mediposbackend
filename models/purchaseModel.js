@@ -9,7 +9,7 @@ const purchaseSchema = new mongoose.Schema(
     },
     purchaseDate: {
       type: Date,
-      required: true,
+      default: Date.now,
     },
     invoiceNumber: {
       type: Number,
@@ -18,7 +18,7 @@ const purchaseSchema = new mongoose.Schema(
     },
     totalAmount: {
       type: Number,
-      required: true,
+      default: 0,
     },
     paidAmount: {
       type: Number,
@@ -48,23 +48,23 @@ const purchaseSchema = new mongoose.Schema(
         productId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
-          required: true,
+          default: null,
         },
         name: {
           type: String,
-          required: true,
+          default: "",
         },
         quantity: {
           type: Number,
-          required: true,
+          default: 0,
         },
         price: {
           type: Number,
-          required: true,
+          default: 0,
         },
         manufacturer: {
           type: String,
-          required: true,
+          default: "",
         },
       },
     ],

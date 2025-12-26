@@ -60,7 +60,6 @@ const getPurchaseById = async (req, res) => {
 ======================= */
 const createPurchase = async (req, res) => {
   try {
-    // Destructure all fields from req.body
     const {
       supplier,
       purchaseDate,
@@ -74,27 +73,47 @@ const createPurchase = async (req, res) => {
       products,
     } = req.body;
 
-    // Basic validation
-    if (!supplier || !purchaseDate || !invoiceNumber || !products?.length) {
+    // Validation
+    if (!supplier || !purchaseDate || !invoiceNumber || !paidAmount || !purchaseDate) {
       return res.status(400).json({
         success: false,
-        message: "Supplier, purchase date, invoice number, and products are required",
+        message: "Supplier, purchase date, invoice number, and paid amount are required",
       });
     }
 
-    // Create new purchase
+    // Calculate balance if not provided
+    const calculatedBalance = totalAmount - (paidAmount || 0);
+
+    // Determine payment status
+    let calculatedPaymentStatus = "Pending";
+    if (paidAmount && paidAmount > 0) {
+      calculatedPaymentStatus = paidAmount < totalAmount ? "Partial" : "Paid";
+    }
+
+    // Create purchase
     const purchase = await Purchase.create({
       supplier,
       purchaseDate,
       invoiceNumber,
       totalAmount,
       paidAmount: paidAmount || 0,
-      paymentStatus: paymentStatus || "Pending",
+      paymentStatus: paymentStatus || calculatedPaymentStatus,
       purchaseStatus: purchaseStatus || "Draft",
-      balance: balance || totalAmount,
+      balance: balance || calculatedBalance,
       taxAmount: taxAmount || 0,
       products,
     });
+
+    // If paidAmount > 0, create a transaction record
+    if (paidAmount && paidAmount > 0) {
+      await Transaction.create({
+        supplier,
+        amount: paidAmount,
+        transactionDate: new Date(), // current date
+        purchaseId: purchase._id,
+        type: "Purchase Payment", // optional field for type
+      });
+    }
 
     res.status(201).json({
       success: true,
