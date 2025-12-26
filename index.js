@@ -24,6 +24,7 @@ import userManagementRoutes from "./routes/UserManagementRoutes.js";
 import roleRoutes from "./routes/RoleRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import testParameterRoutes from "./routes/testParameterroutes.js";
 
 // ------------------ DB ------------------
 dbConnect();
@@ -83,7 +84,7 @@ app.use("/api/users", userManagementRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/categories", categoryRoutes);
-
+app.use("/api/testParameters", testParameterRoutes);
 // ------------------ 404 API ------------------
 app.all(/^\/api\/.*$/, (req, res) => {
   res.status(404).json({ message: "API route not found" });
