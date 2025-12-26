@@ -1,32 +1,5 @@
 import mongoose from "mongoose";
 
-const productSchema = new mongoose.Schema(
-  {
-    productId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
-      default: null,
-    },
-    name: {
-      type: String,
-      default: "",
-    },
-    quantity: {
-      type: Number,
-      default: 0,
-    },
-    price: {
-      type: Number,
-      default: 0,
-    },
-    manufacturer: {
-      type: String,
-      default: "",
-    },
-  },
-  { _id: false } // avoid creating separate _id for each product
-);
-
 const purchaseSchema = new mongoose.Schema(
   {
     supplier: {
@@ -65,16 +38,36 @@ const purchaseSchema = new mongoose.Schema(
     balance: {
       type: Number,
       required: true,
-      default: 0, // fixed: required but now has a default
     },
     taxAmount: {
       type: Number,
       default: 0,
     },
-    products: {
-      type: [productSchema],
-      default: [], // fixed: ensure empty array by default
-    },
+    products: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          default: null,
+        },
+        name: {
+          type: String,
+          default: "",
+        },
+        quantity: {
+          type: Number,
+          default: 0,
+        },
+        price: {
+          type: Number,
+          default: 0,
+        },
+        manufacturer: {
+          type: String,
+          default: "",
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
