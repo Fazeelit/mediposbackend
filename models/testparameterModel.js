@@ -1,31 +1,20 @@
-// models/TestParameter.js
 import mongoose from "mongoose";
 
-const testParameterSchema = new mongoose.Schema(
-  {    
-    testname: {
-      type: String,
-      required: true,
-    },
-    refvalue: {
-      type: String,
-      required: true,
-    },
-    unit: {
-      type: String,
-      trim: true,
-    },
-    cost: {
-      type: Number,
-      required: true,
-      min: 0,
-    }
-  },
-  {
-    timestamps: true,
-  }
-);
+// Schema for individual parameters
+const parameterSchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true },
+  min: { type: Number, trim: true },
+  max: { type: Number, trim: true },
+  unit: { type: String, trim: true },
+  cost: { type: Number, trim: true }, // fixed type
+});
 
-const TestParameter = mongoose.model("TestParameter", testParameterSchema);
+// Schema for the test containing multiple parameters
+const testSchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true }, // Test name
+  parameters: [parameterSchema], // Array of parameters
+});
 
-export default TestParameter;
+const Test = mongoose.model("Test", testSchema);
+
+export default Test;

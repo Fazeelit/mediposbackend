@@ -1,29 +1,31 @@
 import express from "express";
 import {
-  createTestParameter,
-  getAllTestParameters,
-  getTestParameterById,
-  updateTestParameter,
-  deleteTestParameter,
+  createTestparameter,
+  getAllTestsparameter,
+  getTestparameterById,
+  updateTestparameter,
+  deleteTestparameter,
 } from "../controllers/testParametercontroller.js";
 
 const router = express.Router();
 
 /* =========================
-   TEST PARAMETER ROUTES
+   Test Routes
    ========================= */
 
-// Create
-router.post("/createTestParameter", createTestParameter);
+// Create a new test
+router.post("/createTestparameter", createTestparameter);
 
-// Read
-router.get("/", getAllTestParameters);
-router.get("/:id", getTestParameterById);
+// Get all tests
+router.get("/", getAllTestsparameter);
 
-// Update
-router.put("/updateTestParameter/:id", updateTestParameter);
+// Get single test by ID
+router.get("/:id", getTestparameterById);
 
-// Delete
-router.delete("/deleteTestParameter/:id", deleteTestParameter);
+// Update a test by ID
+router.put("/updateTestparameter/:id", updateTestparameter);
+
+// Delete a test by ID
+router.delete("/deleteTestparameter/:id", deleteTestparameter);
 
 export default router;

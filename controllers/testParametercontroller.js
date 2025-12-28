@@ -1,160 +1,139 @@
-import TestParameter from "../models/testparameterModel.js";
+import mongoose from "mongoose";
+import Test from "../models/testparameterModel.js";
 
 /* =========================
-   CREATE Test Parameter
+   CREATE Test
    ========================= */
-const createTestParameter = async (req, res) => {
+const createTestparameter = async (req, res) => {
   try {
-    const { testname, refvalue, unit, cost } = req.body;
+    const { name, parameters } = req.body;
 
-    // Required field validation
-    if (!testname || refvalue === undefined || cost === undefined) {
+    if (!name || !parameters || !Array.isArray(parameters) || parameters.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Test name, reference value, and cost are required",
+        message: "Test name and parameters are required",
       });
     }
 
-    const parameter = await TestParameter.create({
-      testname,
-      refvalue,
-      unit,
-      cost,      
-    });
+    // Validate each parameter has a name
+    for (let param of parameters) {
+      if (!param.name) {
+        return res.status(400).json({
+          success: false,
+          message: "Each parameter must have a name",
+        });
+      }
+    }
+
+    const test = await Test.create({ name, parameters });
 
     res.status(201).json({
       success: true,
-      message: "Test parameter created successfully",
-      data: parameter,
+      message: "Test created successfully",
+      data: test,
     });
   } catch (error) {
-    console.error("Create Test Parameter Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to create test parameter",
-    });
+    console.error("Create Test Error:", error);
+    res.status(500).json({ success: false, message: "Failed to create test" });
   }
 };
 
 /* =========================
-   GET All Test Parameters
+   GET All Tests
    ========================= */
-const getAllTestParameters = async (req, res) => {
+const getAllTestsparameter = async (req, res) => {
   try {
-    const parameters = await TestParameter.find().sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      data: parameters,
-    });
+    const tests = await Test.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: tests });
   } catch (error) {
-    console.error("Get Test Parameters Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch test parameters",
-    });
+    console.error("Get Tests Error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch tests" });
   }
 };
 
 /* =========================
-   GET Single Test Parameter
+   GET Single Test
    ========================= */
-const getTestParameterById = async (req, res) => {
+const getTestparameterById = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ success: false, message: "Invalid Test ID" });
+  }
+
   try {
-    const { id } = req.params;
+    const test = await Test.findById(id);
 
-    const parameter = await TestParameter.findById(id);
+    if (!test) {
+      return res.status(404).json({ success: false, message: "Test not found" });
+    }
 
-    if (!parameter) {
-      return res.status(404).json({
-        success: false,
-        message: "Test parameter not found",
-      });
+    res.status(200).json({ success: true, data: test });
+  } catch (error) {
+    console.error("Get Test Error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch test" });
+  }
+};
+
+/* =========================
+   UPDATE Test
+   ========================= */
+const updateTestparameter = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ success: false, message: "Invalid Test ID" });
+  }
+
+  try {
+    const updatedTest = await Test.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedTest) {
+      return res.status(404).json({ success: false, message: "Test not found" });
     }
 
     res.status(200).json({
       success: true,
-      data: parameter,
+      message: "Test updated successfully",
+      data: updatedTest,
     });
   } catch (error) {
-    console.error("Get Test Parameter Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch test parameter",
-    });
+    console.error("Update Test Error:", error);
+    res.status(500).json({ success: false, message: "Failed to update test" });
   }
 };
 
 /* =========================
-   UPDATE Test Parameter
+   DELETE Test
    ========================= */
-const updateTestParameter = async (req, res) => {
+const deleteTestparameter = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ success: false, message: "Invalid Test ID" });
+  }
+
   try {
-    const { id } = req.params;
+    const deletedTest = await Test.findByIdAndDelete(id);
 
-    const updatedParameter = await TestParameter.findByIdAndUpdate(
-      id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedParameter) {
-      return res.status(404).json({
-        success: false,
-        message: "Test parameter not found",
-      });
+    if (!deletedTest) {
+      return res.status(404).json({ success: false, message: "Test not found" });
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Test parameter updated successfully",
-      data: updatedParameter,
-    });
+    res.status(200).json({ success: true, message: "Test deleted successfully" });
   } catch (error) {
-    console.error("Update Test Parameter Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update test parameter",
-    });
+    console.error("Delete Test Error:", error);
+    res.status(500).json({ success: false, message: "Failed to delete test" });
   }
 };
 
-/* =========================
-   DELETE Test Parameter
-   ========================= */
-const deleteTestParameter = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const deletedParameter = await TestParameter.findByIdAndDelete(id);
-
-    if (!deletedParameter) {
-      return res.status(404).json({
-        success: false,
-        message: "Test parameter not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Test parameter deleted successfully",
-    });
-  } catch (error) {
-    console.error("Delete Test Parameter Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete test parameter",
-    });
-  }
-};
-
-/* =========================
-   EXPORTS (AT END)
-   ========================= */
 export {
-  createTestParameter,
-  getAllTestParameters,
-  getTestParameterById,
-  updateTestParameter,
-  deleteTestParameter,
+  createTestparameter,
+  getAllTestsparameter,
+  getTestparameterById,
+  updateTestparameter,
+  deleteTestparameter,
 };
