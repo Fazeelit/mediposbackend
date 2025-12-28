@@ -15,6 +15,6 @@ const testSchema = new mongoose.Schema({
   parameters: [parameterSchema], // Array of parameters
 });
 
-const Test = mongoose.model("Test", testSchema);
+const TestParameters = mongoose.model("TestParameters", testSchema);
 
-export default Test;
+export default TestParameters;

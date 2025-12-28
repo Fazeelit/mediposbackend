@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Test from "../models/testparameterModel.js";
+import TestParameters from "../models/testparameterModel.js";
 
 /* =========================
    CREATE Test
@@ -25,7 +25,7 @@ const createTestparameter = async (req, res) => {
       }
     }
 
-    const test = await Test.create({ name, parameters });
+    const test = await TestParameters.create({ name, parameters });
 
     res.status(201).json({
       success: true,
@@ -43,7 +43,7 @@ const createTestparameter = async (req, res) => {
    ========================= */
 const getAllTestsparameter = async (req, res) => {
   try {
-    const tests = await Test.find().sort({ createdAt: -1 });
+    const tests = await TestParameters.find().sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: tests });
   } catch (error) {
     console.error("Get Tests Error:", error);
@@ -62,7 +62,7 @@ const getTestparameterById = async (req, res) => {
   }
 
   try {
-    const test = await Test.findById(id);
+    const test = await TestParameters.findById(id);
 
     if (!test) {
       return res.status(404).json({ success: false, message: "Test not found" });
@@ -86,7 +86,7 @@ const updateTestparameter = async (req, res) => {
   }
 
   try {
-    const updatedTest = await Test.findByIdAndUpdate(id, req.body, {
+    const updatedTest = await TestParameters.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
     });
