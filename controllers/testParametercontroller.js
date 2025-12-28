@@ -25,6 +25,20 @@ const createTestparameter = async (req, res) => {
       }
     }
 
+    // Check if a test with the same name and exact parameters already exists
+    const existingTest = await TestParameters.findOne({
+      name,
+      parameters: { $size: parameters.length, $all: parameters.map(p => ({ $elemMatch: { name: p.name, min: p.min, max: p.max, unit: p.unit, cost: p.cost } })) }
+    });
+
+    if (existingTest) {
+      return res.status(400).json({
+        success: false,
+        message: "Test or parameters already exist",
+      });
+    }
+
+    // Create new test
     const test = await TestParameters.create({ name, parameters });
 
     res.status(201).json({
