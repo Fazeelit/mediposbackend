@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  createTestparameter,
+ createTestparameter,
   getAllTestsparameter,
   getTestparameterById,
   updateTestparameter,

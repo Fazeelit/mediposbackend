@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Test from "../models/testModel.js";
+import Test from "../models/testReportModel.js";
 
 /**
  * Get all tests

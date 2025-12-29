@@ -6,6 +6,7 @@ const parameterSchema = new mongoose.Schema({
   min: { type: Number, trim: true },
   max: { type: Number, trim: true },
   unit: { type: String, trim: true },
+  duration: { type: String, trim: true },
   cost: { type: Number, trim: true }, // fixed type
 });
 

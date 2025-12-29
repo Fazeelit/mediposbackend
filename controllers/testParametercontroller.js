@@ -28,7 +28,12 @@ const createTestparameter = async (req, res) => {
     // Check if a test with the same name and exact parameters already exists
     const existingTest = await TestParameters.findOne({
       name,
-      parameters: { $size: parameters.length, $all: parameters.map(p => ({ $elemMatch: { name: p.name, min: p.min, max: p.max, unit: p.unit, cost: p.cost } })) }
+      parameters: {
+        $size: parameters.length,
+        $all: parameters.map((p) => ({
+          $elemMatch: { name: p.name, min: p.min, max: p.max, unit: p.unit, cost: p.cost },
+        })),
+      },
     });
 
     if (existingTest) {
@@ -94,16 +99,54 @@ const getTestparameterById = async (req, res) => {
    ========================= */
 const updateTestparameter = async (req, res) => {
   const { id } = req.params;
+  const { name, parameters } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ success: false, message: "Invalid Test ID" });
   }
 
-  try {
-    const updatedTest = await TestParameters.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
+  if (!name || !parameters || !Array.isArray(parameters) || parameters.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Test name and parameters are required",
     });
+  }
+
+  // Validate each parameter has a name
+  for (let param of parameters) {
+    if (!param.name) {
+      return res.status(400).json({
+        success: false,
+        message: "Each parameter must have a name",
+      });
+    }
+  }
+
+  try {
+    // Check if another test with same name and parameters exists
+    const existingTest = await TestParameters.findOne({
+      _id: { $ne: id },
+      name,
+      parameters: {
+        $size: parameters.length,
+        $all: parameters.map((p) => ({
+          $elemMatch: { name: p.name, min: p.min, max: p.max, unit: p.unit, cost: p.cost },
+        })),
+      },
+    });
+
+    if (existingTest) {
+      return res.status(400).json({
+        success: false,
+        message: "Another test with the same name and parameters already exists",
+      });
+    }
+
+    const updatedTest = await TestParameters.findByIdAndUpdate(
+      id,
+      { name, parameters },
+      { new: true, runValidators: true }
+    );
 
     if (!updatedTest) {
       return res.status(404).json({ success: false, message: "Test not found" });
@@ -131,7 +174,7 @@ const deleteTestparameter = async (req, res) => {
   }
 
   try {
-    const deletedTest = await Test.findByIdAndDelete(id);
+    const deletedTest = await TestParameters.findByIdAndDelete(id);
 
     if (!deletedTest) {
       return res.status(404).json({ success: false, message: "Test not found" });

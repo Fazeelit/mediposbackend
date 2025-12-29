@@ -20,7 +20,7 @@ const testSchema = new mongoose.Schema(
       trim: true,
     },
 
-    category: {
+    duration: {
       type: String,
       required: true,
       trim: true,
