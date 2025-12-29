@@ -17,6 +17,7 @@ const LabTestSchema = new mongoose.Schema({
   doctor: { type: String },
   name: { type: String, required: true }, // Test name
   date: { type: Date, default: Date.now },
+  mobile:{ type: Number, required: true },
   status: { type: String, enum: ["Pending", "Completed"], default: "Pending", },
   paymentStatus: { type: String, enum: ["Pending", "Paid"], default: "Pending", },
   parameters: { type: [ParameterSchema], default: [] },
