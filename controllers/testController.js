@@ -8,9 +8,9 @@ import Test from "../models/testReportModel.js";
 const getAllTests = async (req, res) => {
   try {
     const { search = "", filterStatus = "", filterPayment = "" } = req.query;
-
     const query = {};
 
+    // Search by patient, doctor, test name, or category
     if (search) {
       query.$or = [
         { patient: { $regex: search, $options: "i" } },
@@ -20,16 +20,10 @@ const getAllTests = async (req, res) => {
       ];
     }
 
-    if (filterStatus) {
-      query.status = filterStatus;
-    }
-
-    if (filterPayment) {
-      query.paymentStatus = filterPayment;
-    }
+    if (filterStatus) query.status = filterStatus;
+    if (filterPayment) query.paymentStatus = filterPayment;
 
     const tests = await Test.find(query).sort({ date: -1 });
-
     res.status(200).json({
       success: true,
       count: tests.length,
@@ -37,6 +31,7 @@ const getAllTests = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to fetch tests",
       error: error.message,
     });
@@ -50,20 +45,17 @@ const getAllTests = async (req, res) => {
 const getTestById = async (req, res) => {
   try {
     const { id } = req.params;
-
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid test ID" });
+      return res.status(400).json({ success: false, message: "Invalid test ID" });
     }
 
     const test = await Test.findById(id);
+    if (!test) return res.status(404).json({ success: false, message: "Test not found" });
 
-    if (!test) {
-      return res.status(404).json({ message: "Test not found" });
-    }
-
-    res.status(200).json(test);
+    res.status(200).json({ success: true, data: test });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to fetch test",
       error: error.message,
     });
@@ -76,6 +68,20 @@ const getTestById = async (req, res) => {
  */
 const createTest = async (req, res) => {
   try {
+    const {
+      patient,
+      name,
+      parameters = [],
+      fee = 0,
+      discount = 0,
+      totalfee = 0,
+    } = req.body;
+
+    // Validation
+    if (!patient || !name) {
+      return res.status(400).json({ success: false, message: "Patient and Test Name are required" });
+    }
+
     const test = await Test.create(req.body);
 
     res.status(201).json({
@@ -85,6 +91,7 @@ const createTest = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to create test",
       error: error.message,
     });
@@ -98,9 +105,8 @@ const createTest = async (req, res) => {
 const updateTest = async (req, res) => {
   try {
     const { id } = req.params;
-
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid test ID" });
+      return res.status(400).json({ success: false, message: "Invalid test ID" });
     }
 
     const test = await Test.findByIdAndUpdate(id, req.body, {
@@ -108,9 +114,7 @@ const updateTest = async (req, res) => {
       runValidators: true,
     });
 
-    if (!test) {
-      return res.status(404).json({ message: "Test not found" });
-    }
+    if (!test) return res.status(404).json({ success: false, message: "Test not found" });
 
     res.status(200).json({
       success: true,
@@ -119,6 +123,7 @@ const updateTest = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to update test",
       error: error.message,
     });
@@ -132,16 +137,12 @@ const updateTest = async (req, res) => {
 const deleteTest = async (req, res) => {
   try {
     const { id } = req.params;
-
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid test ID" });
+      return res.status(400).json({ success: false, message: "Invalid test ID" });
     }
 
     const test = await Test.findByIdAndDelete(id);
-
-    if (!test) {
-      return res.status(404).json({ message: "Test not found" });
-    }
+    if (!test) return res.status(404).json({ success: false, message: "Test not found" });
 
     res.status(200).json({
       success: true,
@@ -149,15 +150,12 @@ const deleteTest = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to delete test",
       error: error.message,
     });
   }
 };
-
-/* =======================
-   EXPORTS (AT END)
-======================= */
 
 export {
   getAllTests,

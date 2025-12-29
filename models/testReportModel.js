@@ -1,64 +1,30 @@
 import mongoose from "mongoose";
 
-const testSchema = new mongoose.Schema(
-  {
-    patient: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+const ParameterSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  min: { type: String },
+  max: { type: String },
+  unit: { type: String },
+  cost: { type: Number, default: 0 },
+  duration: { type: String },
+  result: { type: String },
+});
 
-    doctor: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+const LabTestSchema = new mongoose.Schema({
+  patient: { type: String, required: true },
+  age: { type: String },
+  gender: { type: String, enum: ["Male", "Female", "Other"] },
+  doctor: { type: String },
+  name: { type: String, required: true }, // Test name
+  date: { type: Date, default: Date.now },
+  status: { type: String, default: "Pending" },
+  paymentStatus: { type: String, default: "Pending" },
+  parameters: { type: [ParameterSchema], default: [] },
+  fee: { type: Number, default: 0 },
+  discount: { type: Number, default: 0 },
+  totalfee: { type: Number, default: 0 },
+}, { timestamps: true });
 
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+const LabTestReport= mongoose.model("LabTestReport", LabTestSchema);
 
-    duration: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    fee: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
-    date: {
-      type: Date,
-      default: Date.now,
-    },
-
-    status: {
-      type: String,
-      enum: ["Pending", "Completed", "Cancelled"],
-      default: "Pending",
-    },
-
-    paymentStatus: {
-      type: String,
-      enum: ["Pending", "Paid", "Partial"],
-      default: "Pending",
-    },
-
-    notes: {
-      type: String,
-      trim: true,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const Test = mongoose.model("Test", testSchema);
-
-export default Test;
+export default LabTestReport;
