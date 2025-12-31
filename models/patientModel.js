@@ -42,18 +42,11 @@ const patientSchema = new mongoose.Schema(
       default: "Other",
     },
 
-    temperature: {
-      type: Number,
-      required: true,
+    bloodgroup: {
+      type: Number,      
       default: 0,
     },
-
-    bloodpressure: {
-      type: String,
-      required: true,
-      trim: true,
-      default: "Nil",
-    },
+    
   },
   {
     timestamps: true,

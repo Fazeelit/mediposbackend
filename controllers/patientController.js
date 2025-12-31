@@ -74,8 +74,7 @@ const createPatient = async (req, res) => {
       address = "Nil",
       age = 0,
       gender = "Other",
-      temperature = 0,
-      bloodpressure = "Nil",
+      bloodgroup = 0,
     } = req.body;
 
     const patient = await Patient.create({
@@ -85,8 +84,7 @@ const createPatient = async (req, res) => {
       address,
       age,
       gender,
-      temperature,
-      bloodpressure,
+      bloodgroup,
     });
 
     res.status(201).json({
@@ -121,8 +119,7 @@ const updatePatient = async (req, res) => {
       address: req.body.address || "Nil",
       age: req.body.age || 0,
       gender: req.body.gender || "Other",
-      temperature: req.body.temperature || 0,
-      bloodpressure: req.body.bloodpressure || "Nil",
+      bloodgroup: req.body.bloodgroup || "Nil",
     };
 
     const patient = await Patient.findOneAndUpdate(
