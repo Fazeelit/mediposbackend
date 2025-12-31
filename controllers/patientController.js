@@ -70,7 +70,7 @@ const createPatient = async (req, res) => {
     const {
       patientId,
       name,
-      phone,      
+      phone,
       address = "Nil",
       age = 0,
       gender = "Other",
@@ -80,7 +80,7 @@ const createPatient = async (req, res) => {
     const patient = await Patient.create({
       patientId,
       name,
-      phone,       
+      phone,
       address,
       age,
       gender,
@@ -114,14 +114,16 @@ const updatePatient = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Ensure fields are properly defaulted
     const updateData = {
-      ...req.body,        
-      address: req.body.address || "Nil",
-      age: req.body.age || 0,
-      gender: req.body.gender || "Other",
-      bloodgroup: req.body.bloodgroup || "Nil",
+      ...req.body,
+      address: req.body.address,
+      age: req.body.age ?? 0,
+      gender: req.body.gender,
+      bloodGroup: req.body.bloodGroup ,
     };
 
+    // Try to update patient by patientId
     const patient = await Patient.findOneAndUpdate(
       { patientId: id },
       updateData,
@@ -129,16 +131,21 @@ const updatePatient = async (req, res) => {
     );
 
     if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Patient not found",
+      });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Patient updated successfully",
       data: patient,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Update patient error:", error);
+    return res.status(500).json({
+      success: false,
       message: "Failed to update patient",
       error: error.message,
     });
