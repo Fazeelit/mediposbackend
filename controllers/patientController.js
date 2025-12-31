@@ -118,19 +118,19 @@ const updatePatient = async (req, res) => {
       return res.status(400).json({ message: "Invalid product ID" });
     }
 
-    const product = await Patient.findByIdAndUpdate(id, req.body, {
+    const patient = await Patient.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
     });
 
-    if (!product) {
+    if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
 
     res.status(200).json({
       success: true,
       message: "Patient updated successfully",
-      data: product,
+      data: patient,
     });
   } catch (error) {
     res.status(500).json({
