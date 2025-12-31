@@ -120,6 +120,7 @@ const updatePatient = async (req, res) => {
 
     // Build update object safely
     const updateData = {
+      patientId:req.body.patientId,
       name: req.body.name?.trim(),
       phone: req.body.phone?.trim(),
       address: req.body.address?.trim() || "Nil",
