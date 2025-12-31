@@ -112,18 +112,22 @@ const createPatient = async (req, res) => {
  */
 const updatePatient = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // patientId in your schema
 
-    // Ensure fields are properly defaulted
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Patient ID is required" });
+    }
+
+    // Build update object safely
     const updateData = {
-      ...req.body,
-      address: req.body.address,
-      age: req.body.age ?? 0,
-      gender: req.body.gender,
-      bloodGroup: req.body.bloodGroup ,
+      name: req.body.name?.trim(),
+      phone: req.body.phone?.trim(),
+      address: req.body.address?.trim() || "Nil",
+      age: req.body.age != null ? Number(req.body.age) : 0,
+      gender: req.body.gender || "Other",
+      bloodgroup: req.body.bloodgroup != null ? Number(req.body.bloodgroup) : 0,
     };
 
-    // Try to update patient by patientId
     const patient = await Patient.findOneAndUpdate(
       { patientId: id },
       updateData,
@@ -131,27 +135,23 @@ const updatePatient = async (req, res) => {
     );
 
     if (!patient) {
-      return res.status(404).json({
-        success: false,
-        message: "Patient not found",
-      });
+      return res.status(404).json({ success: false, message: "Patient not found" });
     }
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Patient updated successfully",
       data: patient,
     });
   } catch (error) {
     console.error("Update patient error:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Failed to update patient",
       error: error.message,
     });
   }
 };
-
 /**
  * Delete patient
  * DELETE /api/patients/:id
