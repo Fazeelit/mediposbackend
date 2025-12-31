@@ -112,15 +112,14 @@ const createPatient = async (req, res) => {
  */
 const updatePatient = async (req, res) => {
   try {
-    const { id } = req.params; // patientId in your schema
+    const { id } = req.params; // can be patientId or MongoDB _id
 
     if (!id) {
       return res.status(400).json({ success: false, message: "Patient ID is required" });
     }
 
-    // Build update object safely
     const updateData = {
-      patientId:req.body.patientId,
+      patientId: req.body.patientId,
       name: req.body.name?.trim(),
       phone: req.body.phone?.trim(),
       address: req.body.address?.trim() || "Nil",
@@ -129,8 +128,9 @@ const updatePatient = async (req, res) => {
       bloodgroup: req.body.bloodgroup != null ? Number(req.body.bloodgroup) : 0,
     };
 
+    // Use MongoDB _id if front-end sends _id
     const patient = await Patient.findOneAndUpdate(
-      { patientId: id },
+      { patientId: id }, // or {_id: id} if using MongoDB ID
       updateData,
       { new: true, runValidators: true }
     );
