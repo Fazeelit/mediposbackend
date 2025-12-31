@@ -112,47 +112,32 @@ const createPatient = async (req, res) => {
  */
 const updatePatient = async (req, res) => {
   try {
-    const { id } = req.params; // can be patientId or MongoDB _id
+    const { id } = req.params;
 
-    if (!id) {
-      return res.status(400).json({ success: false, message: "Patient ID is required" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
     }
 
-    const updateData = {
-      patientId: req.body.patientId,
-      name: req.body.name?.trim(),
-      phone: req.body.phone?.trim(),
-      address: req.body.address?.trim() || "Nil",
-      age: req.body.age != null ? Number(req.body.age) : 0,
-      gender: req.body.gender || "Other",
-      bloodgroup: req.body.bloodgroup != null ? Number(req.body.bloodgroup) : 0,
-    };
+    const product = await Patient.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
-    // Use MongoDB _id if front-end sends _id
-    const patient = await Patient.findOneAndUpdate(
-      { patientId: id }, // or {_id: id} if using MongoDB ID
-      updateData,
-      { new: true, runValidators: true }
-    );
-
-    if (!patient) {
-      return res.status(404).json({ success: false, message: "Patient not found" });
+    if (!product) {
+      return res.status(404).json({ message: "Patient not found" });
     }
 
     res.status(200).json({
       success: true,
       message: "Patient updated successfully",
-      data: patient,
+      data: product,
     });
   } catch (error) {
-    console.error("Update patient error:", error);
     res.status(500).json({
-      success: false,
       message: "Failed to update patient",
       error: error.message,
     });
   }
-};
 /**
  * Delete patient
  * DELETE /api/patients/:id
