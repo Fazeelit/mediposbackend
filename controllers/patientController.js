@@ -153,10 +153,13 @@ const deletePatient = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const patient = await Patient.findOneAndDelete({ patientId: id });
+    // Match by patientId OR MongoDB _id
+    const patient = await Patient.findOneAndDelete({
+      $or: [{ patientId: id }, { _id: id }]
+    });
 
     if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
+      return res.status(404).json({ success: false, message: "Patient not found" });
     }
 
     res.status(200).json({
@@ -164,7 +167,9 @@ const deletePatient = async (req, res) => {
       message: "Patient deleted successfully",
     });
   } catch (error) {
+    console.error("Delete patient error:", error);
     res.status(500).json({
+      success: false,
       message: "Failed to delete patient",
       error: error.message,
     });
