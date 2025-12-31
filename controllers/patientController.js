@@ -138,6 +138,7 @@ const updatePatient = async (req, res) => {
       error: error.message,
     });
   }
+  }
 /**
  * Delete patient
  * DELETE /api/patients/:id
