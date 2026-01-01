@@ -1,164 +1,111 @@
 import mongoose from "mongoose";
 import Expense from "../models/expenseModel.js";
 
-/**
- * Get all expenses
- * GET /api/expenses
- */
+
+// Get all expenses
 const getAllExpenses = async (req, res) => {
   try {
-    const { search = "", filterStatus = "", filterCategory = "" } = req.query;
-
-    const query = {};
-
-    if (search) {
-      query.$or = [
-        { category: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { vendor: { $regex: search, $options: "i" } },
-        { paymentMethod: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    if (filterStatus) {
-      query.status = filterStatus;
-    }
-
-    if (filterCategory) {
-      query.category = filterCategory;
-    }
-
-    const expenses = await Expense.find(query).sort({ date: -1 });
-
-    res.status(200).json({
-      success: true,
-      count: expenses.length,
-      data: expenses,
-    });
+    const expenses = await Expense.find().sort({ date: -1 }); // Latest first
+    res.status(200).json({ success: true, data: expenses });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch expenses",
-      error: error.message,
-    });
+    console.error("Error fetching expenses:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch expenses" });
   }
 };
 
-/**
- * Get single expense by ID
- * GET /api/expenses/:id
- */
+// Get single expense by ID
 const getExpenseById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid expense ID" });
+      return res.status(400).json({ success: false, message: "Invalid expense ID" });
     }
 
     const expense = await Expense.findById(id);
-
     if (!expense) {
-      return res.status(404).json({ message: "Expense not found" });
+      return res.status(404).json({ success: false, message: "Expense not found" });
     }
 
-    res.status(200).json(expense);
+    res.status(200).json({ success: true, data: expense });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch expense",
-      error: error.message,
-    });
+    console.error("Error fetching expense:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch expense" });
   }
 };
 
-/**
- * Create new expense
- * POST /api/expenses
- */
+// Create new expense
 const createExpense = async (req, res) => {
   try {
-    const expense = await Expense.create(req.body);
+    const expenseData = req.body;
 
-    res.status(201).json({
-      success: true,
-      message: "Expense created successfully",
-      data: expense,
+    // Optional: Validate required fields
+    if (!expenseData.date || !expenseData.description || !expenseData.amount) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    const newExpense = new Expense({
+      ...expenseData,
+      amount: Number(expenseData.amount),
     });
+
+    const savedExpense = await newExpense.save();
+    res.status(201).json({ success: true, data: savedExpense });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to create expense",
-      error: error.message,
-    });
+    console.error("Error creating expense:", error);
+    res.status(500).json({ success: false, message: "Failed to create expense" });
   }
 };
 
-/**
- * Update expense
- * PUT /api/expenses/:id
- */
+// Update existing expense
 const updateExpense = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
+    const updateData = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid expense ID" });
+      return res.status(400).json({ success: false, message: "Invalid expense ID" });
     }
 
-    const expense = await Expense.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedExpense = await Expense.findByIdAndUpdate(
+      id,
+      { ...updateData, amount: updateData.amount ? Number(updateData.amount) : undefined },
+      { new: true, runValidators: true }
+    );
 
-    if (!expense) {
-      return res.status(404).json({ message: "Expense not found" });
+    if (!updatedExpense) {
+      return res.status(404).json({ success: false, message: "Expense not found" });
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Expense updated successfully",
-      data: expense,
-    });
+    res.status(200).json({ success: true, data: updatedExpense });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to update expense",
-      error: error.message,
-    });
+    console.error("Error updating expense:", error);
+    res.status(500).json({ success: false, message: "Failed to update expense" });
   }
 };
 
-/**
- * Delete expense
- * DELETE /api/expenses/:id
- */
+// Delete expense
 const deleteExpense = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid expense ID" });
+      return res.status(400).json({ success: false, message: "Invalid expense ID" });
     }
 
-    const expense = await Expense.findByIdAndDelete(id);
-
-    if (!expense) {
-      return res.status(404).json({ message: "Expense not found" });
+    const deletedExpense = await Expense.findByIdAndDelete(id);
+    if (!deletedExpense) {
+      return res.status(404).json({ success: false, message: "Expense not found" });
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Expense deleted successfully",
-    });
+    res.status(200).json({ success: true, message: "Expense deleted successfully" });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to delete expense",
-      error: error.message,
-    });
+    console.error("Error deleting expense:", error);
+    res.status(500).json({ success: false, message: "Failed to delete expense" });
   }
 };
 
-/* =======================
-   EXPORTS (AT END)
-======================= */
-
+// Export all controllers at the end
 export {
   getAllExpenses,
   getExpenseById,

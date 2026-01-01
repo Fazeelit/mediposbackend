@@ -1,52 +1,74 @@
 import mongoose from "mongoose";
 
-const expenseSchema = new mongoose.Schema(
+const ExpenseSchema = new mongoose.Schema(
   {
     date: {
       type: Date,
       required: true,
-      default: Date.now,
     },
-
     category: {
+      type: String,
+      enum: [
+        "Salary",
+        "Rent",
+        "Utilities",
+        "Equipment",
+        "Maintenance",
+        "Marketing",
+        "Supplies",
+        "Transportation",
+        "Professional Fees",
+        "Insurance",
+        "Taxes",
+        "Other",
+      ],
+      default: "Other",
+      required: true,
+    },
+    description: {
       type: String,
       required: true,
       trim: true,
     },
-
-    description: {
-      type: String,
-      trim: true,
-    },
-
     vendor: {
       type: String,
       trim: true,
+      default: "",
     },
-
     paymentMethod: {
       type: String,
-      enum: ["Cash", "Card", "Bank Transfer", "Other"],
+      enum: ["Cash", "Card", "Bank Transfer", "Cheque"],
       default: "Cash",
     },
-
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Completed", "Cancelled"],
+      default: "Pending",
+    },
     amount: {
       type: Number,
       required: true,
       min: 0,
     },
-
     status: {
       type: String,
-      enum: ["Paid", "Pending", "Cancelled"],
+      enum: ["Pending", "Completed", "Cancelled"],
       default: "Pending",
     },
+    referenceNumber: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    notes: {
+      type: String,
+      trim: true,
+      default: "",
+    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true } // Automatically adds createdAt and updatedAt
 );
 
-const Expense = mongoose.model("Expense", expenseSchema);
+const Expense = mongoose.model("Expense", ExpenseSchema);
 
 export default Expense;
