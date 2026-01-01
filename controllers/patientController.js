@@ -114,32 +114,45 @@ const updatePatient = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Patient ID is required",
+      });
     }
 
-    const patient = await Patient.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedPatient = await Patient.findByIdAndUpdate(
+      id,
+      req.body,
+      {
+        new: true,          // return updated document
+        runValidators: true
+      }
+    );
 
-    if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
+    if (!updatedPatient) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient not found",
+      });
     }
 
-    res.status(200).json({
+    // ✅ ALWAYS return JSON
+    return res.status(200).json({
       success: true,
       message: "Patient updated successfully",
-      data: patient,
+      data: updatedPatient,
     });
+
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to update patient",
-      error: error.message,
+    console.error("Update patient error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while updating patient",
     });
   }
-  }
-/**
+};/**
  * Delete patient
  * DELETE /api/patients/:id
  */
