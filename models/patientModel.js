@@ -43,8 +43,8 @@ const patientSchema = new mongoose.Schema(
     },
 
     bloodgroup: {
-      type: Number,      
-      default: 0,
+      type: String,      
+      default: "Nil",
     },
     
   },
