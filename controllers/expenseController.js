@@ -35,25 +35,57 @@ const getExpenseById = async (req, res) => {
 };
 
 // Create new expense
+
+
 const createExpense = async (req, res) => {
   try {
-    const expenseData = req.body;
+    const {
+      date,
+      category,
+      description,
+      vendor,
+      paymentMethod,
+      paymentStatus,
+      amount,
+      status,
+      referenceNumber,
+      notes,
+    } = req.body;
 
-    // Optional: Validate required fields
-    if (!expenseData.date || !expenseData.description || !expenseData.amount) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+    // Required validation
+    if (!date || !description || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: "Date, description and amount are required",
+      });
     }
 
-    const newExpense = new Expense({
-      ...expenseData,
-      amount: Number(expenseData.amount),
+    const expense = new Expense({
+      date,
+      category,
+      description,
+      vendor,
+      paymentMethod,
+      paymentStatus,
+      amount: Number(amount),
+      status,
+      referenceNumber,
+      notes,
     });
 
-    const savedExpense = await newExpense.save();
-    res.status(201).json({ success: true, data: savedExpense });
+    const savedExpense = await expense.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Expense created successfully",
+      data: savedExpense,
+    });
   } catch (error) {
-    console.error("Error creating expense:", error);
-    res.status(500).json({ success: false, message: "Failed to create expense" });
+    console.error("Create Expense Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create expense",
+    });
   }
 };
 
