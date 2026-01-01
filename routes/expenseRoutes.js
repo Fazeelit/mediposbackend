@@ -20,7 +20,7 @@ router.get("/", getAllExpenses);
 router.get("/:id", getExpenseById);
 
 // Create new expense
-router.post("/createExpense/", createExpense);
+router.post("/createExpense", createExpense);
 
 // Update expense
 router.put("/updateExpense/:id", updateExpense);

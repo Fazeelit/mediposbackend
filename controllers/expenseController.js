@@ -57,10 +57,9 @@ const createExpense = async (req, res) => {
   }
 };
 
-// Update existing expense
 const updateExpense = async (req, res) => {
   try {
-    const { id } = req.query;
+    const { id } = req.params; // <- change from req.query
     const updateData = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -87,7 +86,7 @@ const updateExpense = async (req, res) => {
 // Delete expense
 const deleteExpense = async (req, res) => {
   try {
-    const { id } = req.query;
+    const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: "Invalid expense ID" });
