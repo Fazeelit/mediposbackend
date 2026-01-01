@@ -44,7 +44,7 @@ const patientSchema = new mongoose.Schema(
 
     bloodgroup: {
       type: String,      
-      default: "Nil",
+      default: "N/A",
     },
     
   },
