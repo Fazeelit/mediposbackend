@@ -50,11 +50,6 @@ const ExpenseSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    status: {
-      type: String,
-      enum: ["Pending", "Completed", "Cancelled"],
-      default: "Pending",
-    },
     referenceNumber: {
       type: String,
       trim: true,
@@ -65,9 +60,26 @@ const ExpenseSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    totalamount: {
+      type: Number,
+      default: 0,
+    },
   },
-  { timestamps: true } // Automatically adds createdAt and updatedAt
+  { timestamps: true }
 );
+
+/**
+ * Auto-assign amount to totalamount
+ * when paymentStatus is Completed
+ */
+ExpenseSchema.pre("save", function (next) {
+  if (this.paymentStatus === "Completed") {
+    this.totalamount = this.amount;
+  } else {
+    this.totalamount = 0; // optional: reset if not completed
+  }
+  next();
+});
 
 const Expense = mongoose.model("Expense", ExpenseSchema);
 
