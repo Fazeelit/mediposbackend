@@ -36,8 +36,14 @@ const appointmentSchema = new mongoose.Schema(
       min: 0,
     },
 
+    paidfee: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
     date: {
-      type: Date, // used by calendar
+      type: Date,
       required: true,
     },
   },
@@ -45,6 +51,26 @@ const appointmentSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+/**
+ * Auto-assign fee to paidfee on create
+ */
+appointmentSchema.pre("save", function (next) {
+  if (this.isNew && (!this.paidfee || this.paidfee === 0)) {
+    this.paidfee = this.fee;
+  }
+  next();
+});
+
+/**
+ * Prevent paidfee from exceeding fee
+ */
+appointmentSchema.pre("save", function (next) {
+  if (this.paidfee > this.fee) {
+    return next(new Error("Paid fee cannot be greater than total fee"));
+  }
+  next();
+});
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);
 
