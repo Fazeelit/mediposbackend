@@ -70,23 +70,37 @@ const getSupplierById = async (req, res) => {
   }
 };
 
+
 // Update a supplier
 const updateSupplier = async (req, res) => {
   try {
-    const supplier = await Supplier.findById(req.params.id);
-    if (!supplier) {
+    const { id } = req.params;
+
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid supplier ID" });
+    }
+
+    const updatedSupplier = await Supplier.findByIdAndUpdate(
+      id,
+      req.body,
+      {
+        new: true,        // return updated document
+        runValidators: true, // apply schema validation
+      }
+    );
+
+    if (!updatedSupplier) {
       return res.status(404).json({ message: "Supplier not found" });
     }
 
-    Object.assign(supplier, req.body);
-
-    const updatedSupplier = await supplier.save();
     res.status(200).json(updatedSupplier);
   } catch (error) {
-    console.error(error);
+    console.error("Update Supplier Error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
+
 
 // Delete a supplier
 const deleteSupplier = async (req, res) => {
