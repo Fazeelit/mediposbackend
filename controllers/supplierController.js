@@ -76,28 +76,36 @@ const updateSupplier = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validate MongoDB ObjectId
+    // 🔍 Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid supplier ID" });
     }
 
-    const updatedSupplier = await Supplier.findByIdAndUpdate(
+    // 🔒 Prevent updating supplierId
+    const { supplierId, ...updateData } = req.body;
+
+    const supplier = await Supplier.findByIdAndUpdate(
       id,
-      req.body,
+      updateData,
       {
-        new: true,        // return updated document
-        runValidators: true, // apply schema validation
+        new: true,
+        runValidators: true,
       }
     );
 
-    if (!updatedSupplier) {
+    if (!supplier) {
       return res.status(404).json({ message: "Supplier not found" });
     }
 
-    res.status(200).json(updatedSupplier);
+    res.status(200).json(supplier);
+
   } catch (error) {
-    console.error("Update Supplier Error:", error);
-    res.status(500).json({ message: "Server Error" });
+    console.error("❌ Update Supplier Error:", error.message);
+    console.error(error); // FULL stack trace
+    res.status(500).json({
+      message: "Server Error",
+      error: error.message, // TEMP: remove in production
+    });
   }
 };
 
