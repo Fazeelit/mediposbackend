@@ -53,19 +53,7 @@ const purchaseSchema = new mongoose.Schema(
         name: {
           type: String,
           required: true,
-        },
-        bno: {
-          type: String,
-          required: true,
-        },
-        mfg: {
-          type: String,
-          required: true,
-        },
-        exp: {
-          type: String,
-          required: true,
-        },
+        },        
         quantity: {
           type: Number,
           required: true,

@@ -7,25 +7,42 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    invoiceNumber: {
+      type: Number,
+      required: true,
+      unique: true,
+    },
+    bno: {
+      type: String,
+      required: true,
+    },
+    mfg: {
+      type: String,
+      required: true,
+    },
+    exp: {
+      type: String,
+      required: true,
+    },
     code: {
       type: String,
       required: true,
       unique: true,
       uppercase: true,
       trim: true,
-        },
+    },
     bno: {
-          type: String,
-          required: true,
-        },
+      type: String,
+      required: true,
+    },
     mfg: {
-          type: String,
-          required: true,
-        },
+      type: String,
+      required: true,
+    },
     exp: {
-          type: String,
-          required: true,
-        },
+      type: String,
+      required: true,
+    },
     category: {
       type: String,
       required: true,

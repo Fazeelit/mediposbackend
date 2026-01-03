@@ -77,7 +77,7 @@ const createPurchase = async (req, res) => {
 
     // Validate products array
     for (const p of products) {
-      if (!p.productId || !p.name || !p.bno || !p.mfg || !p.exp || !p.quantity || !p.price || !p.manufacturer) {
+      if (!p.productId || !p.name || !p.quantity || !p.price || !p.manufacturer) {
         return res.status(400).json({
           success: false,
           message: "Each product must have productId, name, bno, mfg, exp, quantity, price, manufacturer",
@@ -133,7 +133,7 @@ const updatePurchase = async (req, res) => {
     // Validate products array if present
     if (updatedData.products) {
       for (const p of updatedData.products) {
-        if (!p.productId || !p.name || !p.bno || !p.mfg || !p.exp || !p.quantity || !p.price || !p.manufacturer) {
+        if (!p.productId || !p.quantity || !p.price || !p.manufacturer) {
           return res.status(400).json({
             success: false,
             message: "Each product must have productId, name, bno, mfg, exp, quantity, price, manufacturer",
