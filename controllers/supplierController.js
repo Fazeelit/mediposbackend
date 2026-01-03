@@ -91,18 +91,23 @@ const updateSupplier = async (req, res) => {
 // Delete a supplier
 const deleteSupplier = async (req, res) => {
   try {
-    const supplier = await Supplier.findById(req.params.id);
+    const { id } = req.params;
+
+    const supplier = await Supplier.findByIdAndDelete(id);
+
     if (!supplier) {
       return res.status(404).json({ message: "Supplier not found" });
     }
 
-    await supplier.remove();
     res.status(200).json({ message: "Supplier deleted successfully" });
   } catch (error) {
-    console.error(error);
+    console.error("Delete Supplier Error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export default deleteSupplier;
+
 
 // Export all controller functions at the end
 export {
