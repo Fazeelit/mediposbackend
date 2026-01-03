@@ -13,7 +13,6 @@ const createSupplier = async (req, res) => {
       companyName,
       productsSupplied,
       paymentTerms,
-      openingBalance,
       status,
       notes,
     } = req.body;
@@ -33,8 +32,7 @@ const createSupplier = async (req, res) => {
       address,
       companyName,
       productsSupplied,
-      paymentTerms,
-      openingBalance,
+      paymentTerms,      
       status,
       notes,
     });

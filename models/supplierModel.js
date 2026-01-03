@@ -52,13 +52,7 @@ const SupplierSchema = new mongoose.Schema(
     paymentTerms: {
       type: String, // e.g. "Cash", "15 Days", "30 Days"
       default: "Cash",
-    },
-
-    openingBalance: {
-      type: Number,
-      default: 0,
-    },
-
+    },    
     status: {
       type: String,
       enum: ["Active", "Inactive"],
