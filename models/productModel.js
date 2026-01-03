@@ -8,21 +8,8 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
     invoiceNumber: {
-      type: Number,
-      required: true,
+      type: Number,      
       unique: true,
-    },
-    bno: {
-      type: String,
-      required: true,
-    },
-    mfg: {
-      type: String,
-      required: true,
-    },
-    exp: {
-      type: String,
-      required: true,
     },
     code: {
       type: String,
@@ -31,18 +18,7 @@ const productSchema = new mongoose.Schema(
       uppercase: true,
       trim: true,
     },
-    bno: {
-      type: String,
-      required: true,
-    },
-    mfg: {
-      type: String,
-      required: true,
-    },
-    exp: {
-      type: String,
-      required: true,
-    },
+    
     category: {
       type: String,
       required: true,
@@ -73,6 +49,18 @@ const productSchema = new mongoose.Schema(
       type: String,
       enum: ["Strip", "Piece", "Box", "Bottle"],
       default: "Piece",
+    },
+    bno: {
+      type: String,
+      required: true,
+    },
+    mfg: {
+      type: String,
+      required: true,
+    },
+    exp: {
+      type: String,
+      required: true,
     },
     date: {
       type: Date,
