@@ -121,41 +121,66 @@ const updatePatient = async (req, res) => {
       });
     }
 
-    const updatedPatient = await Patient.findByIdAndUpdate(
-      id,
-      req.body,
-      {
-        new: true,          // return updated document
-        runValidators: true
-      }
-    );
+    // ❌ Prevent patientId from being updated
+    if (req.body.patientId) {
+      delete req.body.patientId;
+    }
 
-    if (!updatedPatient) {
+    let patient = null;
+
+    // ✅ If MongoDB ObjectId
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      patient = await Patient.findByIdAndUpdate(
+        id,
+        req.body,
+        { new: true, runValidators: true }
+      );
+    }
+
+    // ✅ If not found, try patientId
+    if (!patient) {
+      patient = await Patient.findOneAndUpdate(
+        { patientId: id },
+        req.body,
+        { new: true, runValidators: true }
+      );
+    }
+
+    if (!patient) {
       return res.status(404).json({
         success: false,
         message: "Patient not found",
       });
     }
 
-    // ✅ ALWAYS return JSON
     return res.status(200).json({
       success: true,
       message: "Patient updated successfully",
-      data: updatedPatient,
+      data: patient,
     });
 
   } catch (error) {
     console.error("Update patient error:", error);
 
+    // Duplicate key error (phone / patientId etc.)
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Duplicate value detected",
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Server error while updating patient",
+      error: error.message,
     });
   }
-};/**
- * Delete patient
- * DELETE /api/patients/:id
- */
+};
+
+/* Delete patient
+* DELETE /api/patients/:id
+*/
 const deletePatient = async (req, res) => {
   try {
     const { id } = req.params;
