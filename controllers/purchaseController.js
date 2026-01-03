@@ -6,9 +6,7 @@ import Purchase from "../models/purchaseModel.js";
 ======================= */
 const getAllPurchases = async (req, res) => {
   try {
-    const purchases = await Purchase.find()
-      .populate("products.productId", "name code manufacturer")
-      .sort({ createdAt: -1 });
+    const purchases = await Purchase.find().sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -17,6 +15,7 @@ const getAllPurchases = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to fetch purchases",
       error: error.message,
     });
@@ -31,24 +30,19 @@ const getPurchaseById = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid purchase ID" });
+      return res.status(400).json({ success: false, message: "Invalid purchase ID" });
     }
 
-    const purchase = await Purchase.findById(id).populate(
-      "products.productId",
-      "name code manufacturer"
-    );
+    const purchase = await Purchase.findById(id);
 
     if (!purchase) {
-      return res.status(404).json({ message: "Purchase not found" });
+      return res.status(404).json({ success: false, message: "Purchase not found" });
     }
 
-    res.status(200).json({
-      success: true,
-      data: purchase,
-    });
+    res.status(200).json({ success: true, data: purchase });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to fetch purchase",
       error: error.message,
     });
@@ -60,7 +54,6 @@ const getPurchaseById = async (req, res) => {
 ======================= */
 const createPurchase = async (req, res) => {
   try {
-    // Destructure all fields from req.body
     const {
       supplier,
       purchaseDate,
@@ -74,7 +67,7 @@ const createPurchase = async (req, res) => {
       products,
     } = req.body;
 
-    // Basic validation
+    // Validate main fields
     if (!supplier || !purchaseDate || !invoiceNumber || !products?.length) {
       return res.status(400).json({
         success: false,
@@ -82,7 +75,16 @@ const createPurchase = async (req, res) => {
       });
     }
 
-    // Create new purchase
+    // Validate products array
+    for (const p of products) {
+      if (!p.productId || !p.name || !p.bno || !p.mfg || !p.exp || !p.quantity || !p.price || !p.manufacturer) {
+        return res.status(400).json({
+          success: false,
+          message: "Each product must have productId, name, bno, mfg, exp, quantity, price, manufacturer",
+        });
+      }
+    }
+
     const purchase = await Purchase.create({
       supplier,
       purchaseDate,
@@ -102,7 +104,6 @@ const createPurchase = async (req, res) => {
       data: purchase,
     });
   } catch (error) {
-    console.error(error);
     res.status(400).json({
       success: false,
       message: "Failed to create purchase",
@@ -110,6 +111,7 @@ const createPurchase = async (req, res) => {
     });
   }
 };
+
 /* =======================
    UPDATE PURCHASE
 ======================= */
@@ -118,16 +120,30 @@ const updatePurchase = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid purchase ID" });
+      return res.status(400).json({ success: false, message: "Invalid purchase ID" });
     }
 
     const purchase = await Purchase.findById(id);
     if (!purchase) {
-      return res.status(404).json({ message: "Purchase not found" });
+      return res.status(404).json({ success: false, message: "Purchase not found" });
     }
 
-    Object.assign(purchase, req.body);
-    await purchase.save(); // triggers schema middleware
+    const updatedData = { ...req.body };
+
+    // Validate products array if present
+    if (updatedData.products) {
+      for (const p of updatedData.products) {
+        if (!p.productId || !p.name || !p.bno || !p.mfg || !p.exp || !p.quantity || !p.price || !p.manufacturer) {
+          return res.status(400).json({
+            success: false,
+            message: "Each product must have productId, name, bno, mfg, exp, quantity, price, manufacturer",
+          });
+        }
+      }
+    }
+
+    Object.assign(purchase, updatedData);
+    await purchase.save();
 
     res.status(200).json({
       success: true,
@@ -136,6 +152,7 @@ const updatePurchase = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({
+      success: false,
       message: "Failed to update purchase",
       error: error.message,
     });
@@ -150,12 +167,12 @@ const deletePurchase = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid purchase ID" });
+      return res.status(400).json({ success: false, message: "Invalid purchase ID" });
     }
 
     const purchase = await Purchase.findByIdAndDelete(id);
     if (!purchase) {
-      return res.status(404).json({ message: "Purchase not found" });
+      return res.status(404).json({ success: false, message: "Purchase not found" });
     }
 
     res.status(200).json({
@@ -164,6 +181,7 @@ const deletePurchase = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to delete purchase",
       error: error.message,
     });
@@ -175,10 +193,7 @@ const deletePurchase = async (req, res) => {
 ======================= */
 const getPurchaseList = async (req, res) => {
   try {
-    const purchases = await Purchase.find(
-      {},
-      { _id: 1, invoiceNumber: 1, supplier: 1 }
-    ).sort({ createdAt: -1 });
+    const purchases = await Purchase.find({}, { _id: 1, invoiceNumber: 1, supplier: 1 }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -186,6 +201,7 @@ const getPurchaseList = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to fetch purchase list",
       error: error.message,
     });

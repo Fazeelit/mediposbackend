@@ -13,7 +13,19 @@ const productSchema = new mongoose.Schema(
       unique: true,
       uppercase: true,
       trim: true,
-    },
+        },
+    bno: {
+          type: String,
+          required: true,
+        },
+    mfg: {
+          type: String,
+          required: true,
+        },
+    exp: {
+          type: String,
+          required: true,
+        },
     category: {
       type: String,
       required: true,
