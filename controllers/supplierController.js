@@ -1,4 +1,6 @@
+
 import Supplier from "../models/supplierModel.js";
+import mongoose from "mongoose";
 
 // Create a new supplier
 const createSupplier = async (req, res) => {
