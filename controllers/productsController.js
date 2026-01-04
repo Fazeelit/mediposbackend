@@ -2,15 +2,16 @@ import mongoose from "mongoose";
 import Product from "../models/productModel.js";
 
 /**
- * Get all products (search & filter)
+ * Get all products (search & filter) from URL params
+ * Route: GET /api/products/:filter?/:search?
  */
 const getAllProducts = async (req, res) => {
   try {
-    const { search = "", filter = "All" } = req.query;
+    const { search = "", filter = "All" } = req.params;
 
     const query = {};
 
-    // Search
+    // 🔍 Search
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: "i" } },
@@ -19,13 +20,15 @@ const getAllProducts = async (req, res) => {
       ];
     }
 
-    // Filters (match frontend)
+    // 📌 Filters
     if (filter === "Active") {
       query.status = "Active";
     }
 
     if (filter === "Low Stock") {
-      query.$or = [{ lowStock: true }, { stock: { $lte: 10 } }];
+      query.$or = query.$or
+        ? [...query.$or, { stock: { $lte: 10 } }]
+        : [{ stock: { $lte: 10 } }];
     }
 
     if (filter === "Out of Stock") {
@@ -41,6 +44,7 @@ const getAllProducts = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to fetch products",
       error: error.message,
     });
@@ -55,18 +59,28 @@ const getProductById = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID",
+      });
     }
 
     const product = await Product.findById(id);
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
 
-    res.status(200).json(product);
+    res.status(200).json({
+      success: true,
+      data: product,
+    });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to fetch product",
       error: error.message,
     });
@@ -78,6 +92,13 @@ const getProductById = async (req, res) => {
  */
 const createProduct = async (req, res) => {
   try {
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Request body is empty",
+      });
+    }
+
     const product = await Product.create(req.body);
 
     res.status(201).json({
@@ -87,12 +108,15 @@ const createProduct = async (req, res) => {
     });
   } catch (error) {
     if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
       return res.status(400).json({
-        message: "Product code already exists",
+        success: false,
+        message: `${field} already exists`,
       });
     }
 
     res.status(500).json({
+      success: false,
       message: "Failed to create product",
       error: error.message,
     });
@@ -107,8 +131,14 @@ const updateProduct = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID",
+      });
     }
+
+    // Prevent updating unique code accidentally
+    delete req.body.code;
 
     const product = await Product.findByIdAndUpdate(id, req.body, {
       new: true,
@@ -116,7 +146,10 @@ const updateProduct = async (req, res) => {
     });
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
 
     res.status(200).json({
@@ -126,6 +159,7 @@ const updateProduct = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to update product",
       error: error.message,
     });
@@ -140,21 +174,29 @@ const deleteProduct = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID",
+      });
     }
 
     const product = await Product.findByIdAndDelete(id);
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
 
     res.status(200).json({
       success: true,
       message: "Product deleted successfully",
+      data: product,
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to delete product",
       error: error.message,
     });
@@ -162,18 +204,17 @@ const deleteProduct = async (req, res) => {
 };
 
 /**
- * Product stats (dashboard cards)
+ * Product stats (dashboard)
  */
 const getProductStats = async (req, res) => {
   try {
     const totalProducts = await Product.countDocuments();
     const activeProducts = await Product.countDocuments({ status: "Active" });
-    const lowStock = await Product.countDocuments({
-      $or: [{ lowStock: true }, { stock: { $lte: 10 } }],
-    });
+    const lowStock = await Product.countDocuments({ stock: { $lte: 10 } });
     const outOfStock = await Product.countDocuments({ stock: 0 });
 
     res.status(200).json({
+      success: true,
       totalProducts,
       activeProducts,
       lowStock,
@@ -181,24 +222,35 @@ const getProductStats = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Failed to fetch stats",
       error: error.message,
     });
   }
 };
+
+/**
+ * Get product names only (dropdowns)
+ */
 const getProductName = async (req, res) => {
   try {
-    const products = await Product.find({}, "name"); // only return name
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch products" });
+    const products = await Product.find({}, "name").sort({ name: 1 });
+
+    res.status(200).json({
+      success: true,
+      data: products,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch products",
+    });
   }
 };
 
 /* =======================
-   EXPORTS (AT END)
+   EXPORTS
 ======================= */
-
 export {
   getAllProducts,
   getProductById,
@@ -206,5 +258,5 @@ export {
   updateProduct,
   deleteProduct,
   getProductStats,
-  getProductName
+  getProductName,
 };
