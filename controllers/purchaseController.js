@@ -112,20 +112,17 @@ const createPurchase = async (req, res) => {
   }
 };
 
-const updatePurchase = async (req, res) => {
+/* =======================
+   SUPPLIER PARTIAL PAYMENT BY ID
+======================= */
+const supplierPartialPayment = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: "Invalid purchase ID" });
-    }
-
-    const purchase = await Purchase.findById(id);
-    if (!purchase) {
-      return res.status(404).json({ success: false, message: "Purchase not found" });
-    }
-
+    const { supplierId } = req.params; // changed
     const incomingPayment = Number(req.body.paidAmount) || 0;
+
+    if (!supplierId) {
+      return res.status(400).json({ success: false, message: "Supplier ID required" });
+    }
 
     if (incomingPayment <= 0) {
       return res.status(400).json({
@@ -134,40 +131,44 @@ const updatePurchase = async (req, res) => {
       });
     }
 
-    const totalAmount = Number(purchase.totalAmount);
-    const newPaidAmount = purchase.paidAmount + incomingPayment;
+    // Find all unpaid purchases of this supplier
+    const purchases = await Purchase.find({
+      supplierId, // now using supplierId field
+      paymentStatus: { $ne: "Paid" },
+    }).sort({ createdAt: 1 }); // FIFO: oldest invoices first
 
-    if (newPaidAmount > totalAmount) {
-      return res.status(400).json({
+    if (!purchases.length) {
+      return res.status(404).json({
         success: false,
-        message: "Paid amount cannot exceed total amount",
+        message: "No unpaid purchases found for this supplier",
       });
     }
 
-    const balance = totalAmount - newPaidAmount;
+    let remainingPayment = incomingPayment;
 
-    let paymentStatus =
-      newPaidAmount === 0
-        ? "Pending"
-        : newPaidAmount < totalAmount
-        ? "Partial"
-        : "Paid";
+    for (const purchase of purchases) {
+      if (remainingPayment <= 0) break;
 
-    purchase.paidAmount = newPaidAmount;
-    purchase.balance = balance;
-    purchase.paymentStatus = paymentStatus;
+      const balance = purchase.totalAmount - purchase.paidAmount;
+      const applied = Math.min(balance, remainingPayment);
 
-    await purchase.save();
+      purchase.paidAmount += applied;
+      purchase.balance = purchase.totalAmount - purchase.paidAmount;
+      purchase.paymentStatus =
+        purchase.paidAmount === purchase.totalAmount ? "Paid" : "Partial";
+
+      remainingPayment -= applied;
+      await purchase.save();
+    }
 
     res.status(200).json({
       success: true,
-      message: "Partial payment updated successfully",
-      data: purchase,
+      message: "Supplier payment applied successfully",
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Failed to update purchase",
+      message: "Failed to apply supplier payment",
       error: error.message,
     });
   }
@@ -226,7 +227,7 @@ export {
   getAllPurchases,
   getPurchaseById,
   createPurchase,
-  updatePurchase,
+  supplierPartialPayment,
   deletePurchase,
   getPurchaseList,
 };

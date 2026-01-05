@@ -3,7 +3,7 @@ import {
   getAllPurchases,
   getPurchaseById,
   createPurchase,
-  updatePurchase,
+  supplierPartialPayment,
   deletePurchase,
   getPurchaseList,
 } from "../controllers/purchaseController.js";
@@ -26,8 +26,7 @@ router.get("/:id", getPurchaseById);
 // Create new purchase
 router.post("/createPurchase", createPurchase);
 
-// Update purchase
-router.put("/updatePurchase/:id", updatePurchase);
+router.put("/supplierPayment/:supplier", supplierPartialPayment);
 
 // Delete purchase
 router.delete("/deletePurchase/:id", deletePurchase);
