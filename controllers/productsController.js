@@ -248,6 +248,37 @@ const getProductName = async (req, res) => {
   }
 };
 
+const updateStock = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { stock } = req.body; // new stock value
+
+    if (stock == null || stock < 0) {
+      return res.status(400).json({ message: "Stock must be a non-negative number." });
+    }
+
+    // Find product and update stock
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      { stock }, // Mongoose pre-hook will auto-update lowStock
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found." });
+    }
+
+    res.status(200).json({
+      message: "Stock updated successfully",
+      product: updatedProduct,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
 /* =======================
    EXPORTS
 ======================= */
@@ -259,4 +290,5 @@ export {
   deleteProduct,
   getProductStats,
   getProductName,
+  updateStock
 };
