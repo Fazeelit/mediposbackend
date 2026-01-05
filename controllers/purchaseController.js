@@ -117,74 +117,58 @@ const createPurchase = async (req, res) => {
 ======================= */
 
 const supplierPartialPayment = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
-    const { supplier } = req.params;
-    const amount = Number(req.body.paidAmount);
+    const { supplierId } = req.params; // could be name or id
+    const { paidAmount } = req.body;
 
-    if (!supplier || isNaN(amount) || amount <= 0) {
-      return res.status(400).json({ message: "Invalid payment data" });
+    if (!supplierId || !paidAmount || paidAmount <= 0) {
+      return res.status(400).json({ success: false, message: "Supplier ID and valid paidAmount are required" });
     }
 
-    const payment = await SupplierPayment.create(
-      [
-        {
-          supplier,
-          amount,
-          method: req.body.method || "Cash",
-          note: req.body.note || "",
-          appliedPurchases: [],
-        },
-      ],
-      { session }
-    );
-
-    let remaining = amount;
-
+    // Find unpaid or partial purchases
     const purchases = await Purchase.find({
-      supplier,
-      paymentStatus: { $ne: "Paid" },
-    }).sort({ purchaseDate: 1 }).session(session);
+      supplier: supplierId,
+      paymentStatus: { $ne: "Paid" }
+    }).sort({ purchaseDate: 1 }); // oldest first
 
-    for (const purchase of purchases) {
-      if (remaining <= 0) break;
-
-      const due = purchase.totalAmount - purchase.paidAmount;
-      if (due <= 0) continue;
-
-      const applied = Math.min(due, remaining);
-
-      purchase.paidAmount += applied;
-
-      purchase.paymentHistory.push({
-        paymentId: payment[0]._id,
-        appliedAmount: applied,
-      });
-
-      payment[0].appliedPurchases.push({
-        purchaseId: purchase._id,
-        appliedAmount: applied,
-      });
-
-      await purchase.save({ session });
-      remaining -= applied;
+    if (!purchases.length) {
+      return res.status(404).json({ success: false, message: "No unpaid purchases found" });
     }
 
-    await payment[0].save({ session });
-    await session.commitTransaction();
+    let remainingPayment = paidAmount;
 
-    res.json({ success: true, data: payment[0] });
-  } catch (err) {
-    await session.abortTransaction();
-    console.error("🔥 FULL ERROR:", err);
-    res.status(500).json({ message: err.message });
-  } finally {
-    session.endSession();
+    for (let purchase of purchases) {
+      if (remainingPayment <= 0) break;
+
+      const balance = purchase.totalAmount - purchase.paidAmount;
+      const applied = Math.min(balance, remainingPayment);
+
+      // Update purchase fields
+      purchase.paidAmount += applied;
+      purchase.balance = purchase.totalAmount - purchase.paidAmount;
+      purchase.paymentStatus =
+        purchase.paidAmount === purchase.totalAmount ? "Paid" : "Partial";
+
+      // Add payment history
+      purchase.paymentHistory.push({
+        paymentId: new mongoose.Types.ObjectId(), // or link to a real SupplierPayment doc
+        appliedAmount: applied
+      });
+
+      await purchase.save();
+      remainingPayment -= applied;
+    }
+
+    res.status(200).json({ success: true, message: "Supplier payment applied successfully" });
+  } catch (error) {
+    console.error("Partial Payment Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to apply supplier payment",
+      error: error.message,
+    });
   }
 };
-
 
 
 /* =======================
