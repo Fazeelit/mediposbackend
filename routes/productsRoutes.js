@@ -36,7 +36,7 @@ router.put("/updateProduct/:id", updateProduct);
 // Delete product
 router.delete("/deleteProduct/:id", deleteProduct);
 
-router.put("/stock/:productId", updateStock);
+router.put("/updateStock/:productId", updateStock);
 
 /* =======================
    EXPORT
