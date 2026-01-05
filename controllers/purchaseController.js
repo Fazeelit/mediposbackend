@@ -112,52 +112,41 @@ const createPurchase = async (req, res) => {
   }
 };
 
-/* =======================
-   SUPPLIER PARTIAL PAYMENT BY ID
-======================= */
 const supplierPartialPayment = async (req, res) => {
   try {
-    const { supplierId } = req.params; // changed
-    const incomingPayment = Number(req.body.paidAmount) || 0;
+    const { supplier } = req.params;
+    const incomingPayment = Number(req.body.paidAmount);
 
-    if (!supplierId) {
-      return res.status(400).json({ success: false, message: "Supplier ID required" });
-    }
-
-    if (incomingPayment <= 0) {
+    if (!supplier || incomingPayment <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Paid amount must be greater than zero",
+        message: "Valid supplier and paid amount required",
       });
     }
 
-    // Find all unpaid purchases of this supplier
     const purchases = await Purchase.find({
-      supplierId, // now using supplierId field
+      supplier,
       paymentStatus: { $ne: "Paid" },
-    }).sort({ createdAt: 1 }); // FIFO: oldest invoices first
+    }).sort({ createdAt: 1 });
 
     if (!purchases.length) {
       return res.status(404).json({
         success: false,
-        message: "No unpaid purchases found for this supplier",
+        message: "No unpaid purchases found",
       });
     }
 
-    let remainingPayment = incomingPayment;
+    let remaining = incomingPayment;
 
     for (const purchase of purchases) {
-      if (remainingPayment <= 0) break;
+      if (remaining <= 0) break;
 
-      const balance = purchase.totalAmount - purchase.paidAmount;
-      const applied = Math.min(balance, remainingPayment);
+      const due = purchase.totalAmount - purchase.paidAmount;
+      const applied = Math.min(due, remaining);
 
       purchase.paidAmount += applied;
-      purchase.balance = purchase.totalAmount - purchase.paidAmount;
-      purchase.paymentStatus =
-        purchase.paidAmount === purchase.totalAmount ? "Paid" : "Partial";
+      remaining -= applied;
 
-      remainingPayment -= applied;
       await purchase.save();
     }
 
@@ -173,6 +162,7 @@ const supplierPartialPayment = async (req, res) => {
     });
   }
 };
+
 
 /* =======================
    DELETE PURCHASE
