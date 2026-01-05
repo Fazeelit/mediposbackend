@@ -117,26 +117,24 @@ const createPurchase = async (req, res) => {
 ======================= */
 
 const supplierPartialPayment = async (req, res) => {
-  const session = await Purchase.startSession();
+  const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
     const { supplier } = req.params;
-    const { paidAmount, method = "Cash", note } = req.body;
+    const amount = Number(req.body.paidAmount);
 
-    const amount = Number(paidAmount);
-    if (!supplier || amount <= 0) {
+    if (!supplier || isNaN(amount) || amount <= 0) {
       return res.status(400).json({ message: "Invalid payment data" });
     }
 
-    // 🔹 CREATE PAYMENT FIRST
     const payment = await SupplierPayment.create(
       [
         {
           supplier,
           amount,
-          method,
-          note,
+          method: req.body.method || "Cash",
+          note: req.body.note || "",
           appliedPurchases: [],
         },
       ],
@@ -148,9 +146,7 @@ const supplierPartialPayment = async (req, res) => {
     const purchases = await Purchase.find({
       supplier,
       paymentStatus: { $ne: "Paid" },
-    })
-      .sort({ purchaseDate: 1 })
-      .session(session);
+    }).sort({ purchaseDate: 1 }).session(session);
 
     for (const purchase of purchases) {
       if (remaining <= 0) break;
@@ -163,7 +159,7 @@ const supplierPartialPayment = async (req, res) => {
       purchase.paidAmount += applied;
 
       purchase.paymentHistory.push({
-        paymentId: payment[0]._id, // ✅ VALID ID
+        paymentId: payment[0]._id,
         appliedAmount: applied,
       });
 
@@ -177,26 +173,15 @@ const supplierPartialPayment = async (req, res) => {
     }
 
     await payment[0].save({ session });
-
     await session.commitTransaction();
-    session.endSession();
 
-    res.status(200).json({
-      success: true,
-      message: "Payment applied successfully",
-      data: payment[0],
-    });
-  } catch (error) {
+    res.json({ success: true, data: payment[0] });
+  } catch (err) {
     await session.abortTransaction();
+    console.error("🔥 FULL ERROR:", err);
+    res.status(500).json({ message: err.message });
+  } finally {
     session.endSession();
-
-    console.error("PAYMENT ERROR:", error.message);
-
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-      error: error.message,
-    });
   }
 };
 
