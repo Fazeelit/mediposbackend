@@ -112,56 +112,49 @@ const createPurchase = async (req, res) => {
   }
 };
 
-/* =======================
-   Uppdate Partial Payment
-======================= */
-
 const supplierPartialPayment = async (req, res) => {
   try {
-    const { supplierId } = req.params; // could be name or id
-    const { paidAmount } = req.body;
+    const { supplier } = req.params;
+    const incomingPayment = Number(req.body.paidAmount);
 
-    if (!supplierId || !paidAmount || paidAmount <= 0) {
-      return res.status(400).json({ success: false, message: "Supplier ID and valid paidAmount are required" });
+    if (!supplier || incomingPayment <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid supplier and paid amount required",
+      });
     }
 
-    // Find unpaid or partial purchases
     const purchases = await Purchase.find({
-      supplier: supplierId,
-      paymentStatus: { $ne: "Paid" }
-    }).sort({ purchaseDate: 1 }); // oldest first
+      supplier,
+      paymentStatus: { $ne: "Paid" },
+    }).sort({ createdAt: 1 });
 
     if (!purchases.length) {
-      return res.status(404).json({ success: false, message: "No unpaid purchases found" });
+      return res.status(404).json({
+        success: false,
+        message: "No unpaid purchases found",
+      });
     }
 
-    let remainingPayment = paidAmount;
+    let remaining = incomingPayment;
 
-    for (let purchase of purchases) {
-      if (remainingPayment <= 0) break;
+    for (const purchase of purchases) {
+      if (remaining <= 0) break;
 
-      const balance = purchase.totalAmount - purchase.paidAmount;
-      const applied = Math.min(balance, remainingPayment);
+      const due = purchase.totalAmount - purchase.paidAmount;
+      const applied = Math.min(due, remaining);
 
-      // Update purchase fields
       purchase.paidAmount += applied;
-      purchase.balance = purchase.totalAmount - purchase.paidAmount;
-      purchase.paymentStatus =
-        purchase.paidAmount === purchase.totalAmount ? "Paid" : "Partial";
-
-      // Add payment history
-      purchase.paymentHistory.push({
-        paymentId: new mongoose.Types.ObjectId(), // or link to a real SupplierPayment doc
-        appliedAmount: applied
-      });
+      remaining -= applied;
 
       await purchase.save();
-      remainingPayment -= applied;
     }
 
-    res.status(200).json({ success: true, message: "Supplier payment applied successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Supplier payment applied successfully",
+    });
   } catch (error) {
-    console.error("Partial Payment Error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to apply supplier payment",
