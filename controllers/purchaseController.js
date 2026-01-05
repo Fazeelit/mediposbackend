@@ -118,16 +118,16 @@ const createPurchase = async (req, res) => {
 
 const supplierPartialPayment = async (req, res) => {
   try {
-    const { supplierId } = req.params; // could be name or id
+    const { supplierName } = req.params; // name from URL
     const { paidAmount } = req.body;
 
-    if (!supplierId || !paidAmount || paidAmount <= 0) {
-      return res.status(400).json({ success: false, message: "Supplier ID and valid paidAmount are required" });
+    if (!supplierName || !paidAmount || paidAmount <= 0) {
+      return res.status(400).json({ success: false, message: "Supplier name and valid paidAmount are required" });
     }
 
     // Find unpaid or partial purchases
     const purchases = await Purchase.find({
-      supplier: supplierId,
+      supplier: supplierName,
       paymentStatus: { $ne: "Paid" }
     }).sort({ purchaseDate: 1 }); // oldest first
 
@@ -151,7 +151,7 @@ const supplierPartialPayment = async (req, res) => {
 
       // Add payment history
       purchase.paymentHistory.push({
-        paymentId: new mongoose.Types.ObjectId(), // or link to a real SupplierPayment doc
+        paymentId: new mongoose.Types.ObjectId(), // temporary ID or real payment doc
         appliedAmount: applied
       });
 
