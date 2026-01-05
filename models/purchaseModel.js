@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+/* -------------------------------
+  Purchase Schema
+--------------------------------*/
 const purchaseSchema = new mongoose.Schema(
   {
     supplier: {
@@ -53,13 +56,16 @@ const purchaseSchema = new mongoose.Schema(
       default: "Draft",
     },
 
-    /* 🔹 PAYMENT TRANSACTION LINKS */
+    /* -------------------------------
+       Payment History
+       Records all partial/full payments applied to this purchase
+    --------------------------------*/
     paymentHistory: [
       {
         paymentId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "SupplierPayment",
-          required: true,
+          required: true, // must reference a valid SupplierPayment
         },
         appliedAmount: {
           type: Number,
@@ -73,6 +79,9 @@ const purchaseSchema = new mongoose.Schema(
       },
     ],
 
+    /* -------------------------------
+       Purchased Products
+    --------------------------------*/
     products: [
       {
         productId: {
@@ -90,7 +99,10 @@ const purchaseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-/* 🔹 Auto-calculate balance & payment status */
+/* -------------------------------
+   Pre-save hook
+   Auto-calculate balance & payment status
+--------------------------------*/
 purchaseSchema.pre("save", function (next) {
   this.balance = Math.max(this.totalAmount - this.paidAmount, 0);
 
@@ -101,4 +113,6 @@ purchaseSchema.pre("save", function (next) {
   next();
 });
 
-export default mongoose.model("Purchase", purchaseSchema);
+const Purchase=mongoose.model("Purchase", purchaseSchema);
+
+export default Purchase;
