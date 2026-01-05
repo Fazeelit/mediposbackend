@@ -112,62 +112,48 @@ const createPurchase = async (req, res) => {
   }
 };
 
-/* =======================
-   UPDATE PURCHASE (PARTIAL PAYMENT SAFE)
-======================= */
 const updatePurchase = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid purchase ID",
-      });
+      return res.status(400).json({ success: false, message: "Invalid purchase ID" });
     }
 
     const purchase = await Purchase.findById(id);
     if (!purchase) {
-      return res.status(404).json({
-        success: false,
-        message: "Purchase not found",
-      });
+      return res.status(404).json({ success: false, message: "Purchase not found" });
     }
 
-    const paidAmount = Number(req.body.paidAmount) || 0;
-    const totalAmount = Number(purchase.totalAmount) || 0;
+    const incomingPayment = Number(req.body.paidAmount) || 0;
 
-    if (paidAmount < 0) {
+    if (incomingPayment <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Paid amount cannot be negative",
+        message: "Paid amount must be greater than zero",
       });
     }
 
-    if (paidAmount > totalAmount) {
+    const totalAmount = Number(purchase.totalAmount);
+    const newPaidAmount = purchase.paidAmount + incomingPayment;
+
+    if (newPaidAmount > totalAmount) {
       return res.status(400).json({
         success: false,
         message: "Paid amount cannot exceed total amount",
       });
     }
 
-    /* =======================
-       Calculate balance
-    ======================= */
-    const balance = totalAmount - paidAmount;
+    const balance = totalAmount - newPaidAmount;
 
-    /* =======================
-       Determine payment status
-    ======================= */
-    let paymentStatus = "Pending";
-    if (paidAmount === 0) paymentStatus = "Pending";
-    else if (paidAmount < totalAmount) paymentStatus = "Partial";
-    else paymentStatus = "Paid";
+    let paymentStatus =
+      newPaidAmount === 0
+        ? "Pending"
+        : newPaidAmount < totalAmount
+        ? "Partial"
+        : "Paid";
 
-    /* =======================
-       Update fields
-    ======================= */
-    purchase.paidAmount = paidAmount;
+    purchase.paidAmount = newPaidAmount;
     purchase.balance = balance;
     purchase.paymentStatus = paymentStatus;
 
