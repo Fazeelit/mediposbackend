@@ -112,22 +112,34 @@ const createPurchase = async (req, res) => {
   }
 };
 
+/* =======================
+   Uppdate Partial Payment
+======================= */
+
 const supplierPartialPayment = async (req, res) => {
+  const session = await Purchase.startSession();
+  session.startTransaction();
+
   try {
     const { supplier } = req.params;
-    const incomingPayment = Number(req.body.paidAmount);
+    const { paidAmount, method = "Cash", note } = req.body;
 
-    if (!supplier || incomingPayment <= 0) {
+    const amount = Number(paidAmount);
+
+    if (!supplier || amount <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Valid supplier and paid amount required",
+        message: "Valid supplier and amount required",
       });
     }
 
+    // 🔹 FIFO: oldest unpaid purchases first
     const purchases = await Purchase.find({
       supplier,
       paymentStatus: { $ne: "Paid" },
-    }).sort({ createdAt: 1 });
+    })
+      .sort({ purchaseDate: 1 })
+      .session(session);
 
     if (!purchases.length) {
       return res.status(404).json({
@@ -136,32 +148,80 @@ const supplierPartialPayment = async (req, res) => {
       });
     }
 
-    let remaining = incomingPayment;
+    let remaining = amount;
+    const appliedPurchases = [];
 
     for (const purchase of purchases) {
       if (remaining <= 0) break;
 
       const due = purchase.totalAmount - purchase.paidAmount;
+      if (due <= 0) continue;
+
       const applied = Math.min(due, remaining);
 
+      // 🔹 UPDATE EACH PURCHASE
       purchase.paidAmount += applied;
-      remaining -= applied;
 
-      await purchase.save();
+      purchase.paymentHistory.push({
+        paymentId: null, // temp, will update after payment is created
+        appliedAmount: applied,
+      });
+
+      await purchase.save({ session });
+
+      appliedPurchases.push({
+        purchaseId: purchase._id,
+        appliedAmount: applied,
+      });
+
+      remaining -= applied;
     }
+
+    // 🔹 CREATE PAYMENT TRANSACTION
+    const [payment] = await SupplierPayment.create(
+      [
+        {
+          supplier,
+          amount,
+          method,
+          note,
+          appliedPurchases,
+        },
+      ],
+      { session }
+    );
+
+    // 🔹 UPDATE paymentId inside each purchase history
+    for (const purchase of purchases) {
+      purchase.paymentHistory.forEach((ph) => {
+        if (!ph.paymentId) {
+          ph.paymentId = payment._id;
+        }
+      });
+      await purchase.save({ session });
+    }
+
+    await session.commitTransaction();
+    session.endSession();
 
     res.status(200).json({
       success: true,
-      message: "Supplier payment applied successfully",
+      message: "Supplier payment applied correctly",
+      data: payment,
     });
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+
     res.status(500).json({
       success: false,
-      message: "Failed to apply supplier payment",
+      message: "Payment failed",
       error: error.message,
     });
   }
 };
+
+
 
 
 /* =======================
