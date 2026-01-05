@@ -53,6 +53,26 @@ const purchaseSchema = new mongoose.Schema(
       default: "Draft",
     },
 
+    /* 🔹 PAYMENT TRANSACTION LINKS */
+    paymentHistory: [
+      {
+        paymentId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "SupplierPayment",
+          required: true,
+        },
+        appliedAmount: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+        appliedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
     products: [
       {
         productId: {
@@ -72,7 +92,7 @@ const purchaseSchema = new mongoose.Schema(
 
 /* 🔹 Auto-calculate balance & payment status */
 purchaseSchema.pre("save", function (next) {
-  this.balance = this.totalAmount - this.paidAmount;
+  this.balance = Math.max(this.totalAmount - this.paidAmount, 0);
 
   if (this.paidAmount === 0) this.paymentStatus = "Pending";
   else if (this.paidAmount < this.totalAmount) this.paymentStatus = "Partial";
