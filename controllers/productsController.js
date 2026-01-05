@@ -248,33 +248,59 @@ const getProductName = async (req, res) => {
   }
 };
 
-const updateStock = async (req, res) => {
+const updateStockAfterSale = async () => {
   try {
-    const { productId } = req.params;
-    const { stock } = req.body; // new stock value
+    // Fetch all products
+    const res = await apiRequest("/products", { method: "GET" });
+    const allProducts = res?.data || [];
 
-    if (stock == null || stock < 0) {
-      return res.status(400).json({ message: "Stock must be a non-negative number." });
-    }
-
-    // Find product and update stock
-    const updatedProduct = await Product.findByIdAndUpdate(
-      productId,
-      { stock }, // Mongoose pre-hook will auto-update lowStock
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedProduct) {
-      return res.status(404).json({ message: "Product not found." });
-    }
-
-    res.status(200).json({
-      message: "Stock updated successfully",
-      product: updatedProduct,
+    // Group products by name
+    const productMap = new Map();
+    allProducts.forEach((p) => {
+      const key = p.name.trim().toLowerCase();
+      if (productMap.has(key)) {
+        const existing = productMap.get(key);
+        productMap.set(key, {
+          ...existing,
+          totalStock: existing.totalStock + Number(p.stock || 0),
+          ids: [...existing.ids, p._id],
+        });
+      } else {
+        productMap.set(key, {
+          ...p,
+          totalStock: Number(p.stock || 0),
+          ids: [p._id],
+        });
+      }
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+
+    // Deduct sold items from total stock
+    for (const soldItem of items) {
+      const key = soldItem.name.trim().toLowerCase();
+      if (!productMap.has(key)) continue;
+
+      const productData = productMap.get(key);
+      let remainingQty = soldItem.qty;
+
+      for (const id of productData.ids) {
+        const product = allProducts.find((p) => p._id === id);
+        if (!product) continue;
+
+        const currentStock = Number(product.stock || 0);
+        const newStock = Math.max(currentStock - remainingQty, 0);
+
+        // PATCH request to backend
+        await apiRequest(`/products/updateStock/${id}`, {
+          method: "PATCH",
+          data: { stock: newStock },
+        });
+
+        remainingQty -= currentStock;
+        if (remainingQty <= 0) break;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to update stock:", err);
   }
 };
 
@@ -290,5 +316,5 @@ export {
   deleteProduct,
   getProductStats,
   getProductName,
-  updateStock
+  updateStockAfterSale
 };

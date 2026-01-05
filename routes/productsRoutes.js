@@ -7,7 +7,7 @@ import {
   deleteProduct,
   getProductStats,
   getProductName,
-  updateStock
+  updateStockAfterSale
 } from "../controllers/productsController.js";
 
 const router = express.Router();
@@ -36,7 +36,7 @@ router.put("/updateProduct/:id", updateProduct);
 // Delete product
 router.delete("/deleteProduct/:id", deleteProduct);
 
-router.put("/updateStock/:productId", updateStock);
+router.put("/updateStock/:productId", updateStockAfterSale);
 
 /* =======================
    EXPORT
