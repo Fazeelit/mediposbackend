@@ -113,45 +113,73 @@ const createPurchase = async (req, res) => {
 };
 
 /* =======================
-   UPDATE PURCHASE
+   UPDATE PURCHASE (PARTIAL PAYMENT SAFE)
 ======================= */
 const updatePurchase = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: "Invalid purchase ID" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid purchase ID",
+      });
     }
 
     const purchase = await Purchase.findById(id);
     if (!purchase) {
-      return res.status(404).json({ success: false, message: "Purchase not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Purchase not found",
+      });
     }
 
-    const updatedData = { ...req.body };
+    const paidAmount = Number(req.body.paidAmount) || 0;
+    const totalAmount = Number(purchase.totalAmount) || 0;
 
-    // Validate products array if present
-    if (updatedData.products) {
-      for (const p of updatedData.products) {
-        if (!p.productId || !p.quantity || !p.price || !p.manufacturer) {
-          return res.status(400).json({
-            success: false,
-            message: "Each product must have productId, name, bno, mfg, exp, quantity, price, manufacturer",
-          });
-        }
-      }
+    if (paidAmount < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Paid amount cannot be negative",
+      });
     }
 
-    Object.assign(purchase, updatedData);
+    if (paidAmount > totalAmount) {
+      return res.status(400).json({
+        success: false,
+        message: "Paid amount cannot exceed total amount",
+      });
+    }
+
+    /* =======================
+       Calculate balance
+    ======================= */
+    const balance = totalAmount - paidAmount;
+
+    /* =======================
+       Determine payment status
+    ======================= */
+    let paymentStatus = "Pending";
+    if (paidAmount === 0) paymentStatus = "Pending";
+    else if (paidAmount < totalAmount) paymentStatus = "Partial";
+    else paymentStatus = "Paid";
+
+    /* =======================
+       Update fields
+    ======================= */
+    purchase.paidAmount = paidAmount;
+    purchase.balance = balance;
+    purchase.paymentStatus = paymentStatus;
+
     await purchase.save();
 
     res.status(200).json({
       success: true,
-      message: "Purchase updated successfully",
+      message: "Partial payment updated successfully",
       data: purchase,
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       success: false,
       message: "Failed to update purchase",
       error: error.message,

@@ -9,11 +9,10 @@ const purchaseSchema = new mongoose.Schema(
     },
     purchaseDate: {
       type: Date,
-      required: true,
+      
     },
     invoiceNumber: {
-      type: Number,
-      required: true,
+      type: Number,      
       unique: true,
     },
     totalAmount: {
@@ -28,6 +27,7 @@ const purchaseSchema = new mongoose.Schema(
     paymentStatus: {
       type: String,
       enum: ["Pending", "Partial", "Paid"],
+      required: true,
       default: "Pending",
     },
     purchaseStatus: {
@@ -47,24 +47,19 @@ const purchaseSchema = new mongoose.Schema(
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-          required: true,
+          ref: "Product",          
         },
         name: {
-          type: String,
-          required: true,
+          type: String,          
         },        
         quantity: {
-          type: Number,
-          required: true,
+          type: Number,          
         },
         price: {
-          type: Number,
-          required: true,
+          type: Number,          
         },
         manufacturer: {
-          type: String,
-          required: true,
+          type: String,          
         },
       },
     ],
