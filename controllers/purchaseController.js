@@ -80,7 +80,7 @@ const createPurchase = async (req, res) => {
       if (!p.productId || !p.name || !p.quantity || !p.price || !p.manufacturer) {
         return res.status(400).json({
           success: false,
-          message: "Each product must have productId, name, bno, mfg, exp, quantity, price, manufacturer",
+          message: "Each product must have productId, name, quantity, price, manufacturer",
         });
       }
     }
