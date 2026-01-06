@@ -49,6 +49,7 @@ const createExpense = async (req, res) => {
       amount,
       status,
       referenceNumber,
+      investment,
       notes,
     } = req.body;
 
@@ -70,6 +71,7 @@ const createExpense = async (req, res) => {
       amount: Number(amount),
       status,
       referenceNumber,
+      investment,
       notes,
     });
 
