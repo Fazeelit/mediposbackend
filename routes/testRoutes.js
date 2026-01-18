@@ -4,7 +4,7 @@ import {
   getTestById,
   createTest,
   updateTest,
-  deleteTest,
+  deleteTest
 } from "../controllers/testController.js";
 
 const router = express.Router();

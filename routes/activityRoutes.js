@@ -11,11 +11,10 @@ const router = express.Router();
 
 /* ================= ACTIVITY ROUTES ================= */
 
-// Create a new activity
-router.post("/", createActivity);
-
 // Get all activities (with search & filter)
 router.get("/", getAllActivities);
+// Create a new activity
+router.post("/createActivity", createActivity);
 
 // Get activity summary (dashboard cards)
 router.get("/summary", getActivitySummary);
