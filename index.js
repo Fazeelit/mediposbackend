@@ -29,8 +29,8 @@ import roleRoutes from "./routes/RoleRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import testParameterRoutes from "./routes/testParameterroutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
-import userAdminRoutes from "./routes/adminRoutes.js";
 
+// ------------------ Express App ------------------
 const app = express();
 
 // ------------------ CORS ------------------
@@ -67,7 +67,6 @@ app.get("/", (req, res) => {
 });
 
 // ------------------ API Routes ------------------
-app.use("/api/admins", userAdminRoutes);
 app.use("/api/user-management", userManagementRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/appointments", appointmentRoutes);
