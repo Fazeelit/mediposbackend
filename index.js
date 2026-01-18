@@ -1,14 +1,18 @@
+// server.js
 import express from "express";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import cors from "cors";
 import http from "http";
 
-// ================== ENV ==================
+// Load environment variables
 dotenv.config();
 
-// ================== IMPORTS ==================
+// ------------------ Database ------------------
 import dbConnect from "./config/database.js";
+dbConnect();
+
+// ------------------ Config ------------------
 import config from "./config/config.js";
 
 // ------------------ Routes ------------------
@@ -25,33 +29,19 @@ import roleRoutes from "./routes/RoleRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import testParameterRoutes from "./routes/testParameterroutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
+import userAdminRoutes from "./routes/adminRoutes.js";
 
-// ================== APP ==================
 const app = express();
 
-// ================== ENV VALIDATION ==================
-if (!process.env.MONGODB_URI) {
-  console.error("❌ MONGODB_URI is not defined in .env");
-  process.exit(1);
-}
-
-if (!process.env.JWT_SECRET) {
-  console.error("❌ JWT_SECRET is not defined in .env");
-  process.exit(1);
-}
-
-// ================== CORS ==================
-const allowedOrigins = process.env.WEBAPP_URL
-  ? process.env.WEBAPP_URL.split(",")
-  : ["http://localhost:3000"];
-
+// ------------------ CORS ------------------
+const allowedOrigins = ["http://localhost:3000"];
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
+      if (!origin) return callback(null, true); // allow Postman or server requests
       if (allowedOrigins.includes(origin)) return callback(null, true);
       if (origin.endsWith(".vercel.app")) return callback(null, true);
-      return callback(new Error("Not allowed by CORS"));
+      return callback(new Error("Not allowed by CORS"), false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -59,25 +49,25 @@ app.use(
   })
 );
 
-// ================== PREFLIGHT ==================
-app.use((req, res, next) => {
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-  next();
-});
+// ------------------ Preflight handler ------------------
+// Use regex instead of "*" to avoid PathError
+app.options(/.*/, (req, res) => res.sendStatus(204));
 
-// ================== MIDDLEWARE ==================
+// ------------------ Middleware ------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan("dev"));
 
-// ================== ROOT ==================
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
+// ------------------ Root ------------------
 app.get("/", (req, res) => {
-  res.status(200).send("✅ Backend is running!");
+  res.send("✅ Backend is running!");
 });
 
-// ================== API ROUTES ==================
+// ------------------ API Routes ------------------
+app.use("/api/admins", userAdminRoutes);
 app.use("/api/user-management", userManagementRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/appointments", appointmentRoutes);
@@ -92,45 +82,32 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/testParameters", testParameterRoutes);
 app.use("/api/suppliers", supplierRoutes);
 
-// ================== API 404 ==================
+// ------------------ 404 for API ------------------
 app.all(/^\/api\/.*$/, (req, res) => {
   res.status(404).json({ message: "API route not found" });
 });
 
-// ================== ERROR HANDLER ==================
+// ------------------ Global Error Handler ------------------
 app.use((err, req, res, next) => {
-  console.error("❌ Error Stack:", err.stack);
-  res.status(500).json({
-    message: "Internal Server Error",
-  });
-});
+  console.error("⚠️ Error:", err);
 
-// ================== PROCESS SAFETY ==================
-process.on("unhandledRejection", (err) => {
-  console.error("❌ Unhandled Rejection:", err);
-});
-
-process.on("uncaughtException", (err) => {
-  console.error("❌ Uncaught Exception:", err);
-  process.exit(1);
-});
-
-// ================== SERVER START ==================
-const PORT = config.port || process.env.PORT || 8080;
-const HOST = process.env.HOST || "0.0.0.0";
-
-(async () => {
-  try {
-    await dbConnect();
-
-    const server = http.createServer(app);
-    server.timeout = 5 * 60 * 1000;
-
-    server.listen(PORT, HOST, () => {
-      console.log(`🚀 Server running at http://${HOST}:${PORT}`);
-    });
-  } catch (error) {
-    console.error("❌ Failed to start server:", error);
-    process.exit(1);
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({ message: err.message });
   }
-})();
+
+  const status = err.statusCode || 500;
+  res.status(status).json({ message: err.message || "Internal Server Error" });
+});
+
+// ------------------ Server ------------------
+const PORT = config.port || 8080;
+const HOST = "0.0.0.0";
+
+const server = http.createServer(app);
+
+// Optional: adjust timeout (uploads, long requests)
+server.timeout = 5 * 60 * 1000; // 5 minutes
+
+server.listen(PORT, HOST, () => {
+  console.log(`🚀 Server running at http://${HOST}:${PORT}`);
+});
