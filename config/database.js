@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 
 const dbConnect = async () => {
   // Ensure MONGO_URI exists
+  console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+
   if (!process.env.MONGO_URI) {
     console.error("❌ MONGO_URI is not defined in .env");
     process.exit(1);
