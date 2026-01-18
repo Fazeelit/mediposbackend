@@ -4,27 +4,32 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const dbConnect = async () => {
-  // Ensure MONGO_URI exists
-  if (!process.env.MONGO_URI) {
-    console.error("❌ MONGO_URI is not defined in .env");
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    console.error("❌ MONGODB_URI is not defined in .env");
     process.exit(1);
   }
 
   try {
-    // Connect to MongoDB (no deprecated options needed)
-    await mongoose.connect(process.env.MONGO_URI);
+    if (mongoose.connection.readyState >= 1) {
+      console.log("ℹ️ MongoDB already connected");
+      return;
+    }
+
+    await mongoose.connect(uri);
     console.log("✅ MongoDB connected successfully");
 
-    // Optional: log connection events
-    mongoose.connection.on("error", (err) => {
-      console.error("❌ MongoDB connection error:", err);
-    });
-    mongoose.connection.on("disconnected", () => {
-      console.warn("⚠️ MongoDB disconnected");
-    });
+    mongoose.connection.on("error", err =>
+      console.error("❌ MongoDB error:", err.message)
+    );
+
+    mongoose.connection.on("disconnected", () =>
+      console.warn("⚠️ MongoDB disconnected")
+    );
   } catch (error) {
     console.error("❌ MongoDB connection failed:", error.message);
-    process.exit(1); // Exit the process if DB connection fails
+    process.exit(1);
   }
 };
 
