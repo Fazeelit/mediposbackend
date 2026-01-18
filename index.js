@@ -1,4 +1,3 @@
-// server.js
 import express from "express";
 import morgan from "morgan";
 import dotenv from "dotenv";
@@ -19,12 +18,11 @@ import purchaseRoutes from "./routes/purchaseRoutes.js";
 import salesRoutes from "./routes/salesRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
-import userManagementRoutes from "./routes/UserManagementRoutes.js";
+import UserManagementRoutes from "./routes/UserManagementRoutes.js";
 import roleRoutes from "./routes/RoleRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import testParameterRoutes from "./routes/testParameterroutes.js";
-import supplierRoutes from "./routes/supplierRoutes.js";
-import userAdminRoutes from "./routes/adminRoutes.js";
+import supplierRoutes from "./routes/supplierRoutes.js ";
 
 // ------------------ DB ------------------
 dbConnect();
@@ -69,10 +67,7 @@ app.get("/", (req, res) => {
   res.send("✅ Backend is running!");
 });
 
-
 // ------------------ API Routes ------------------
-app.use("/api/admins", userAdminRoutes);
-app.use("/api/user-management", userManagementRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/patients", patientRoutes);
@@ -85,6 +80,7 @@ app.use("/api/roles", roleRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/testParameters", testParameterRoutes);
 app.use("/api/suppliers", supplierRoutes);
+app.use("/api/user-management", UserManagementRoutes);
 
 // ------------------ 404 API ------------------
 app.all(/^\/api\/.*$/, (req, res) => {
